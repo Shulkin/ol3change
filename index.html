@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<link rel="stylesheet" href="src/bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="src/font-awesome/css/font-awesome.css">
+		<link rel="stylesheet" href="src/ol3/ol.css">
+		<link rel="stylesheet" href="src/css/Popup.css">
+		<link rel="stylesheet" href="src/css/LayersControl.css">
+		<link rel="stylesheet" href="src/css/index.css">
+		<script src="src/ol3/ol-debug.js"></script>
+		<script src="src/jquery/jquery.js"></script>
+		<script src="src/bootstrap/js/bootstrap.js"></script>
+		<title>Ортофотомозаики Владивостока</title> <!-- maybe left title empty? -->
+	</head>
+	<body>
+		<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<!-- don't need application title in header -->
+				<!-- <a class="navbar-brand" href="#">Application Template</a> -->
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li class="dropdown">
+						<a id="toolsDrop" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+							<i class="fa fa-globe" style="color: white"></i>
+							&nbsp;&nbsp;<span id="m_extent"></span> <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="zoomToFullExtent(); return false;">
+								<i class="fa fa-arrows-alt"></i>
+								&nbsp;&nbsp;<span id="m_extent_max"></span>
+							</a></li>
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="zoomToVladivostok(); return false;">
+								<i class="fa fa-flag"></i>
+								&nbsp;&nbsp;<span id="m_extent_vl"></span>
+							</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a id="toolsDrop" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+							<i class="fa fa-picture-o" style="color: white"></i>
+							&nbsp;&nbsp;<span id="m_layers"></span> <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="m_con(); return false;">
+								<i class="fa fa-folder-open"></i>
+								&nbsp;&nbsp;<span id="m_layers_add"></span>
+							</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a id="toolsDrop" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+							<i class="fa fa-layer" style="color: white"></i>
+							&nbsp;&nbsp;<span id="m_service"></span> <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in">
+								<span data-toggle="modal" data-target="#confirm">
+									<i class="fa fa-eye"></i>
+									&nbsp;&nbsp;<span id="m_service_change"></span>
+								</span>
+							</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a id="toolsDrop" href="#" role="button"
+							class="dropdown-toggle" data-toggle="dropdown">
+								&nbsp;&nbsp;<span id="m_export"></span> <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="m_con(); return false;">
+								<i class="fa fa-print"></i>
+								&nbsp;&nbsp;<span id="m_export_print"></span>
+							</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a id="toolsDrop" href="#" role="button"
+							class="dropdown-toggle" data-toggle="dropdown">
+								&nbsp;&nbsp;<span id="m_info"></span> <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="m_con(); return false;">
+								<i class="fa fa-info-circle"></i>
+								&nbsp;&nbsp;<span id="m_info_about"></span>
+							</a></li>
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="m_con(); return false;">
+								<i class="fa fa-phone"></i>
+								&nbsp;&nbsp;<span id="m_info_contacts"></span>
+							</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a id="toolsDrop" href="#" role="button"
+							class="dropdown-toggle" data-toggle="dropdown">
+								&nbsp;&nbsp;<span id="m_lang"></span> <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="changeLanguage('ru'); return false;">
+								&nbsp;&nbsp;<span id="m_lang_ru"></span>
+							</a></li>
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in"
+								onclick="changeLanguage('en'); return false;">
+								&nbsp;&nbsp;<span id="m_lang_en"></span>
+							</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div><!-- /.navbar-collapse -->
+		</div>
+		<div id="map">
+			<div id="popup" class="ol-popup">
+			</div>
+		</div>
+		<!-- modal dialog 1, define options for change detection -->
+		<div id="confirm" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+				<!-- content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title"><span id="md_change_title"></span></h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button"
+							class="btn btn-default" data-dismiss="modal"
+							onclick="changeDetection(get('method')); return false;">
+							<span id="md_change_confirm"></span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- modal dialog 2, simple message for error, info ,etc. -->
+		<div id="msg" class="modal fade" role="dialog">
+			<div class="modal-dialog modal-sm">
+				<!-- content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title"></h4>
+					</div>
+					<div class="modal-body">
+						<p></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">
+							<span id="md_msg_close"></span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="lib/app.js"></script>
+	</body>
+</html>

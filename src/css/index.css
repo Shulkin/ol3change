@@ -1,0 +1,46 @@
+.layers-control {
+	position: fixed;
+	bottom: 10px;
+	top: auto;
+}
+.layers-control .delete {
+	background-color: transparent;
+	background-repeat: no-repeat;
+	border: none;
+	cursor: pointer;
+	overflow: hidden;
+	outline: none;
+	font-weight: bold;
+	font-size: 20px;
+	color: black;
+}
+.layers-control .delete:hover {
+	color: grey;
+}
+html, body, #map {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+body {
+	padding-top: 50px;
+}
+.navbar .navbar-brand {
+	font-weight: bold;
+	font-size: 25px;
+	color: white;
+}
+#popup-content {
+	max-height: 200px;
+	overflow-y: auto;
+}
+.modal-body select {
+	margin-bottom: 1em;
+}
+.ol-attribution {
+	right: auto;
+	left: .5em;
+}
+.ol-attribution button {
+	float: left;
+}
