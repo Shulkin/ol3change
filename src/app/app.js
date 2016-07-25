@@ -68,13 +68,13 @@ var osm = new ol.layer.Tile({
 // satellite imagery
 var mosaics = [
 	new ol.layer.Tile({
-		title: "Владивосток 2м 2010_1",
+		title: "Владивосток 1м 2010_1",
 		group: "imagery",
 		visible: false,
 		deletable: false,
 		source: new ol.source.TileWMS({
 			url: url,
-			params: {'LAYERS': "Mosaic1_ChangeDetection" + ':' + "Mosaic_20101230_UTM52_2m", 'TILED': true},
+			params: {'LAYERS': "Mosaic1_ChangeDetection" + ':' + "Mosaic_20101230_part1_1m", 'TILED': true},
 			serverType: 'geoserver'
 		})
 	}),
@@ -85,7 +85,7 @@ var mosaics = [
 		deletable: false,
 		source: new ol.source.TileWMS({
 			url: url,
-			params: {'LAYERS': "Mosaic1_ChangeDetection" + ':' + "Mosaic_20110224_part2_UTM52_2m", 'TILED': true},
+			params: {'LAYERS': "Mosaic1_ChangeDetection" + ':' + "Mosaic_20110224_part2_1m", 'TILED': true},
 			serverType: 'geoserver'
 		})
 	}),
@@ -96,7 +96,7 @@ var mosaics = [
 		deletable: false,
 		source: new ol.source.TileWMS({
 			url: url,
-			params: {'LAYERS': "Mosaic2_ChangeDetection" + ':' + "Vladivostok_Mosaic2_ChangeDetection", 'TILED': true},
+			params: {'LAYERS': "Mosaic2_ChangeDetection" + ':' + "Mosaic_201207161_1m", 'TILED': true},
 			serverType: 'geoserver'
 		})
 	}),
