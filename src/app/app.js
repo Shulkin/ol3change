@@ -79,7 +79,7 @@ var mosaics = [
 		})
 	}),
 	new ol.layer.Tile({
-		title: "Владивосток 2м 2010_2",
+		title: "Владивосток 1м 2010_2",
 		group: "imagery",
 		visible: false,
 		deletable: false,
@@ -90,7 +90,7 @@ var mosaics = [
 		})
 	}),
 	new ol.layer.Tile({
-		title: "Владивосток 2м 2012",
+		title: "Владивосток 1м 2012",
 		group: "imagery",
 		visible: false,
 		deletable: false,
