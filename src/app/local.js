@@ -37,6 +37,11 @@ var messages = {
 			},
 			msg: {
 				_close: "Close"
+			},
+			_layers: {
+				title: "Add new layer",
+				load: "Load",
+				add: "Add"
 			}
 		},
 		group: {
@@ -100,6 +105,11 @@ var messages = {
 			},
 			msg: {
 				_close: "Закрыть"
+			},
+			_layers: {
+				title: "Добавить новый слой",
+				load: "Загрузить",
+				add: "Добавить"
 			}
 		},
 		group: {

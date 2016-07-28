@@ -2,6 +2,7 @@
  * Add all your dependencies here.
  *
  * @require Popup.js
+ * @require LayersTree.js
  * @require LayersControl.js
  * @require translate.js
  * @require local.js
@@ -326,6 +327,9 @@ function trModal() {
 	$("span#md_change_title").text(tr('modal:change:title'));
 	$("span#md_change_confirm").text(tr('modal:change:_confirm'));
 	$("span#md_msg_close").text(tr('modal:msg:_close'));
+	$("span#md_layers_title").text(tr('modal:_layers:title'));
+	$("span#md_layers_load").text(tr('modal:_layers:load'));
+	$("span#md_layers_add").text(tr('modal:_layers:add'));
 }
 
 // translate document title

@@ -11,6 +11,7 @@
 		<link rel="stylesheet" href="src/ol3/ol.css">
 		<link rel="stylesheet" href="src/css/Popup.css">
 		<link rel="stylesheet" href="src/css/LayersControl.css">
+		<link rel="stylesheet" href="src/css/treeview.css">
 		<link rel="stylesheet" href="src/css/index.css">
 		<script src="src/ol3/ol-debug.js"></script>
 		<script src="src/jquery/jquery.js"></script>
@@ -58,10 +59,11 @@
 						<ul class="dropdown-menu">
 							<li><a href="#"
 								data-toggle="collapse"
-								data-target=".navbar-collapse.in"
-								onclick="m_con(); return false;">
-								<i class="fa fa-folder-open"></i>
-								&nbsp;&nbsp;<span id="m_layers_add"></span>
+								data-target=".navbar-collapse.in">
+								<span data-toggle="modal" data-target="#layers">
+									<i class="fa fa-folder-open"></i>
+									&nbsp;&nbsp;<span id="m_layers_add"></span>
+								</span>
 							</a></li>
 						</ul>
 					</li>
@@ -177,6 +179,34 @@
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">
 							<span id="md_msg_close"></span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- modal dialog 3, load layers from services -->
+		<div id="layers" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+				<!-- content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title"><span id="md_layers_title"></span></h4>
+					</div>
+					<div class="modal-body">
+						<div>
+							<input id="wms" type="text" value="http://gis.dvo.ru:8080/geoserver/wms?" size="32"> <!-- default geoserver -->
+							<button type="button" class="btn btn-default" onclick="loadLayers(); return false;">
+								<span id="md_layers_load"></span>
+							</button>
+						</div>
+						<div id="layers-list"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button"
+							class="btn btn-default" data-dismiss="modal"
+							onclick="addLayers(); return false;">
+							<span id="md_layers_add"></span>
 						</button>
 					</div>
 				</div>

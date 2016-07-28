@@ -1,3 +1,7 @@
+function isArray(obj) {
+	return (Object.prototype.toString.call(obj) === "[object Array]");
+}
+
 function zoomToFullExtent() {
 	map.getView().setCenter(center_max);
 	map.getView().setZoom(zoom_max);
