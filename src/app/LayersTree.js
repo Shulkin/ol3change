@@ -140,6 +140,7 @@ function pushMosaic(service, layerName, title, isDelete) {
 		deletable: isDelete,
 		source: new ol.source.TileWMS({
 			url: service,
+			crossOrigin: 'null',
 			params: {'LAYERS': layerName, 'TILED': true},
 			serverType: 'geoserver'
 		})
