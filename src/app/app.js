@@ -208,6 +208,9 @@ function trMenu() {
 	$("span#m_lang").text(tr('menu:lang:title'));
 	$("span#m_lang_ru").text(tr('menu:lang:ru'));
 	$("span#m_lang_en").text(tr('menu:lang:en'));
+	$("span#m_user").text(tr('menu:user:login'));
+	$("span#m_user_logout").text(tr('menu:user:logout'));
+	$("span#m_user_username").text(tr('menu:user:default_username')); // just in case
 }
 
 // translate modal windows
@@ -218,6 +221,13 @@ function trModal() {
 	$("span#md_layers_title").text(tr('modal:_layers:title'));
 	$("span#md_layers_load").text(tr('modal:_layers:load'));
 	$("span#md_layers_add").text(tr('modal:_layers:add'));
+	$("span#md_auth_title").text(tr('modal:auth:title'));
+	$("span#md_auth_login").text(tr('modal:auth:login'));
+	$("span#md_auth_username").text(tr('modal:auth:username'));
+	$("span#md_auth_password").text(tr('modal:auth:_password'));
+	$("span#md_logout_title").text(tr('modal:logout:title'));
+	$("span#md_logout_question").text(tr('modal:logout:question'));
+	$("span#md_logout_yes").text(tr('modal:logout:yes'));
 }
 
 // translate document title
@@ -262,6 +272,18 @@ function setLanguageFromULR() {
 	if (validParam(param1)) {
 		settings.lang = param1;
 	}
+}
+
+function login(username, _password) {
+	$("span#m_user_username").text(username);
+	$("#menu_login_user").hide();
+	$("#menu_logout_user").show();
+}
+
+function logout() {
+	$("span#m_user_username").text(tr('menu:user:default_username')); // just in case
+	$("#menu_login_user").show();
+	$("#menu_logout_user").hide();
 }
 
 $(document).ready(function() {

@@ -28,6 +28,11 @@ var messages = {
 				title: "Language",
 				ru: "Russian",
 				en: "English"
+			},
+			user: {
+				login: "Login",
+				logout: "Logout",
+				default_username: "User"
 			}
 		},
 		modal: {
@@ -42,6 +47,17 @@ var messages = {
 				title: "Add new layer",
 				load: "Load",
 				add: "Add"
+			},
+			auth: {
+				title: "Login user",
+				login: "Login",
+				username: "Username",
+				_password: "Password"
+			},
+			logout: {
+				title: "Logout user",
+				question: "Do you really want to logout user?",
+				yes: "Yes"
 			}
 		},
 		group: {
@@ -96,6 +112,11 @@ var messages = {
 				title: "Язык",
 				ru: "Русский",
 				en: "Английский"
+			},
+			user: {
+				login: "Войти",
+				logout: "Выйти",
+				default_username: "Пользователь"
 			}
 		},
 		modal: {
@@ -110,6 +131,17 @@ var messages = {
 				title: "Добавить новый слой",
 				load: "Загрузить",
 				add: "Добавить"
+			},
+			auth: {
+				title: "Войти в систему",
+				login: "Войти",
+				username: "Имя пользователя",
+				_password: "Пароль"
+			},
+			logout: {
+				title: "Выйти из системы",
+				question: "Вы действительно хотите выйти?",
+				yes: "Да"
 			}
 		},
 		group: {
