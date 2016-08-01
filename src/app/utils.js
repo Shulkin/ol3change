@@ -2,6 +2,10 @@ function isArray(obj) {
 	return (Object.prototype.toString.call(obj) === "[object Array]");
 }
 
+Array.prototype.last = function() {
+	return this[this.length - 1];
+}
+
 function zoomToFullExtent() {
 	map.getView().setCenter(center_max);
 	map.getView().setZoom(zoom_max);

@@ -12,6 +12,7 @@
 
 // ==== config ====
 var url = '/geoserver/ows?';
+var default_geoserver = "http://gis.dvo.ru:8080/geoserver/wms?";
 // full extent
 var center_max = [-10764594.758211, 4523072.3184791];
 var zoom_max = 3;
@@ -66,53 +67,6 @@ var osm = new ol.layer.Tile({
 	deletable: false,
 	source: new ol.source.OSM()
 });
-// satellite imagery
-var mosaics = [
-	new ol.layer.Tile({
-		title: "Владивосток 1м 2010_1",
-		group: "imagery",
-		visible: false,
-		deletable: false,
-		source: new ol.source.TileWMS({
-			url: url,
-			params: {'LAYERS': "Mosaic1_ChangeDetection" + ':' + "Mosaic_20101230_part1_1m", 'TILED': true},
-			serverType: 'geoserver'
-		})
-	}),
-	new ol.layer.Tile({
-		title: "Владивосток 1м 2010_2",
-		group: "imagery",
-		visible: false,
-		deletable: false,
-		source: new ol.source.TileWMS({
-			url: url,
-			params: {'LAYERS': "Mosaic1_ChangeDetection" + ':' + "Mosaic_20110224_part2_1m", 'TILED': true},
-			serverType: 'geoserver'
-		})
-	}),
-	new ol.layer.Tile({
-		title: "Владивосток 1м 2012",
-		group: "imagery",
-		visible: false,
-		deletable: false,
-		source: new ol.source.TileWMS({
-			url: url,
-			params: {'LAYERS': "Mosaic2_ChangeDetection" + ':' + "Mosaic_201207161_1m", 'TILED': true},
-			serverType: 'geoserver'
-		})
-	}),
-	new ol.layer.Tile({
-		title: "Владивосток 1м 2015",
-		group: "imagery",
-		visible: false,
-		deletable: false,
-		source: new ol.source.TileWMS({
-			url: url,
-			params: {'LAYERS': "Mosaic3_Resurs_ChangeDetection" + ':' + "Mosaic_UTM521", 'TILED': true},
-			serverType: 'geoserver'
-		})
-	})
-];
 // cadastre overlay
 var cadastre = new ol.layer.Tile({
 	title: 'Кадастр',
@@ -124,80 +78,6 @@ var cadastre = new ol.layer.Tile({
 		serverType: 'mapserver'
 	})
 });
-/*
-// roads from OSM
-var topojson = new ol.format.TopoJSON();
-var tileGrid = ol.tilegrid.createXYZ({maxZoom: 19});
-var roadStyleCache = {};
-var roadColor = {
-	'major_road': '#776',
-	'minor_road': '#ccb',
-	'highway': '#f39'
-};
-var roads = new ol.layer.VectorTile({
-	title: 'Дороги',
-	visible: false,
-	source: new ol.source.VectorTile({
-		format: topojson,
-		tileGrid: tileGrid,
-		url: 'http://{a-c}.tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.topojson'
-	}),
-	style: function(feature) {
-		var kind = feature.get('kind');
-		var railway = feature.get('railway');
-		var sort_key = feature.get('sort_key');
-		var styleKey = kind + '/' + railway + '/' + sort_key;
-		var style = roadStyleCache[styleKey];
-		if (!style) {
-			var color, width;
-			if (railway) {
-				color = '#7de';
-				width = 1;
-			} else {
-				color = roadColor[kind];
-				width = kind == 'highway' ? 1.5 : 1;
-			}
-			style = new ol.style.Style({
-				stroke: new ol.style.Stroke({
-					color: color,
-					width: width
-				}),
-				zIndex: sort_key
-			});
-			roadStyleCache[styleKey] = style;
-		}
-		return style;
-	}
-});
-// labels from OSM
-var labels = new ol.layer.VectorTile({
-	title: 'Подписи',
-	visible: false,
-	source: new ol.source.VectorTile({
-		format: topojson,
-		tileGrid: tileGrid,
-		url: 'http://tile.openstreetmap.us/vectiles-skeletron/{z}/{x}/{y}.topojson'
-	}),
-	style: function(feature) {
-		var name = feature.get('name');
-		var sort_key = feature.get('sort_key');
-		style = new ol.style.Style({
-			stroke: new ol.style.Stroke({
-				color: "red",
-				width: 2
-			}),
-			text: new ol.style.Text({
-				font: '12px Verdana',
-				text: name,
-				fill: new ol.style.Fill({color: 'black'}),
-				stroke: new ol.style.Stroke({color: 'white', width: 0.5})
-			}),
-			zIndex: sort_key
-		});
-		return style;
-	}
-});
-*/
 
 // create the OpenLayers Map object
 // we add a layer switcher to the map with two groups:
@@ -225,8 +105,6 @@ var map = new ol.Map({
 	// define layers
 	layers: [
 		bing, osm, // background
-		mosaics[0], mosaics[1], mosaics[2], mosaics[3], // satellite mosaics
-		/*roads, labels,*/ // additional data from OSM, deprecated for now
 		cadastre, // overlay with open cadastre map
 		highlight // highlight cadastre feature on select
 	],
@@ -237,6 +115,7 @@ var map = new ol.Map({
 		zoom: zoom_vl
 	})
 });
+initSatelliteMosaics();
 
 // create parser and handler for GetFeatureInfo request
 var parser = new ol.format.WMSGetFeatureInfo();
@@ -259,6 +138,15 @@ map.on('singleclick', function(evt) {
 		});
 	}
 });
+
+// satellite imagery
+function initSatelliteMosaics() {
+	mosaics = [];
+	pushMosaic(default_geoserver, "Mosaic1_ChangeDetection:Mosaic_20101230_part1_1m", "Владивосток 1м 2010_1", false);
+	pushMosaic(default_geoserver, "Mosaic1_ChangeDetection:Mosaic_20110224_part2_1m", "Владивосток 1м 2010_2", false);
+	pushMosaic(default_geoserver, "Mosaic2_ChangeDetection:Mosaic_201207161_1m", "Владивосток 1м 2012", false);
+	pushMosaic(default_geoserver, "Mosaic3_Resurs_ChangeDetection:Mosaic_UTM521", "Владивосток 1м 2015", false);
+}
 
 function l_div(title, id) {
 	var div = $("<div>");
@@ -364,6 +252,7 @@ function validParam(obj) {
 
 function changeLanguage(code) {
 	// force reload page
+	// TODO: change localhost to default url before ?
 	location.href = "http://localhost:9080?lang=" + code;
 }
 
