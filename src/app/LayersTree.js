@@ -104,10 +104,21 @@ function loadLayers() {
 	if (service.substr(service.length - 1) != "?") {
 		service += "?";
 	}
+	//http://ol3change_admin:admin@gis.dvo.ru:8080/geoserver/wms?service=wms&request=GetCapabilities
+	
 	$.ajax({
 		type: "GET",
-		headers: {"Origin": "true"},
-		// insertAuthData here!
+		
+		//username: "ol3change_admin",
+		//password: "admin",
+		
+		//headers: {"Origin": "true"},
+		
+		//headers: {"Authorization": "Basic " + btoa("Shulkin" + ":" + "5121988")}, // works!
+		headers: {"Authorization": "Basic " + btoa("ol3change_admin" + ":" + "admin")}, // works!
+		//headers: {"Authorization": "Basic " + encodeAuthData(), "Origin": "true"},
+		//headers: {"Authorization": "Basic " + encodeAuthData(), "Origin": "true"},
+		
 		url: service + "service=WMS&request=GetCapabilities"
 	}).done(function (response) {
 		console.log("Got response from server!");
@@ -120,6 +131,43 @@ function loadLayers() {
 		updateLayersDOM();
 		console.log("Done!");
 	});
+	
+	/*
+	$.ajax({
+		url: "http://gis.dvo.ru:8080/geoserver/j_spring_security_check", // j_spring_security_check
+		type: "POST",
+		crossDomain: true,
+		dataType: 'text',
+		contentType: 'application/x-www-form-urlencoded',//text/plain',application/json
+		data: {
+			username: 'ol3change_admin',
+			password: 'admin'
+		},
+		xhrFields: {
+			withCredentials: true
+		},
+		headers: {
+			"Access-Control-Allow-Credentials": true,
+			"Access-Control-Allow-Origin": "*"
+		}
+	}).success(function(data, textStatus) {
+		console.log('success data: ' + data, '|  success textStatus: ' + textStatus);
+	}).error(function(jqXHR, textStatus, errorThrown) {
+		console.log('error errorThrown: ' + errorThrown, '|  error textStatus: ' + textStatus);
+	}).complete(function(jqXHR, textStatus) {
+		console.log('complete textStatus: ' + textStatus);
+		//var tis = new ol.layer.Image({
+		//	source: new ol.source.ImageWMS({
+		//		url: 'http://localhost:8080/geoserver/wms?',
+		//		params: {
+		//			"Authorization": make_base_auth("admin", "geoserver"),
+		//			'VERSION': '1.1.0',
+		//			'LAYERS': 'tis:admin', 
+		//			'transparent': 'true'
+		//		}
+		//	})
+	});
+	*/
 }
 
 // get all checked layers from list and add to map one by one
@@ -133,25 +181,38 @@ function addComposition() {
 	}
 }
 
+function customLoader(tile, src) {
+	var client = new XMLHttpRequest();
+	client.open('GET', src);
+	client.setRequestHeader('Authorization', "Basic " + btoa("Shulkin" + ":" + "5121988"));
+	client.onload = function() {
+		var data = 'data:image/png;base64,' + btoa(unescape(encodeURIComponent(this.responseText)));
+		tile.getImage().src = data;
+	};
+	client.send();
+}
+
 function pushMosaic(service, layerName, title, isDelete) {
+	var tile = new ol.source.TileWMS({
+		url: service,
+		crossOrigin: 'null',
+		params: {'LAYERS': layerName, 'TILED': true},
+		serverType: 'geoserver'
+	});
+	tile.setTileLoadFunction(customLoader);
 	var new_layer = new ol.layer.Tile({
 		title: title,
 		group: "imagery",
 		visible: false,
 		deletable: isDelete,
-		source: new ol.source.TileWMS({
-			// insertAuthData here!
-			url: service,
-			crossOrigin: 'null',
-			params: {'LAYERS': layerName, 'TILED': true},
-			serverType: 'geoserver'
-		})
+		source: tile
 	});
 	mosaics.push(new_layer);
 	map.addLayer(mosaics.last());
 	refreshLayersList(map);
 }
 
+/*
 function insertAuthData(url) {
 	var user = getUsername();
 	var pass = getPassword();
@@ -161,6 +222,15 @@ function insertAuthData(url) {
 		return url.insert(7, user + ":" + pass + "@");
 	}
 }
+*/
+
+/*
+function encodeAuthData() {
+	//return getUsername() + ":" + getPassword();
+	// ol3change_admin:admin
+	return "b2wzY2hhbmdlX2FkbWluOmFkbWlu";
+}
+*/
 
 // handler on show layers list window
 $('#layers').on('shown.bs.modal', function() {
