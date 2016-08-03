@@ -107,6 +107,7 @@ function loadLayers() {
 	$.ajax({
 		type: "GET",
 		headers: {"Origin": "true"},
+		// insertAuthData here!
 		url: service + "service=WMS&request=GetCapabilities"
 	}).done(function (response) {
 		console.log("Got response from server!");
@@ -139,6 +140,7 @@ function pushMosaic(service, layerName, title, isDelete) {
 		visible: false,
 		deletable: isDelete,
 		source: new ol.source.TileWMS({
+			// insertAuthData here!
 			url: service,
 			crossOrigin: 'null',
 			params: {'LAYERS': layerName, 'TILED': true},
@@ -148,6 +150,16 @@ function pushMosaic(service, layerName, title, isDelete) {
 	mosaics.push(new_layer);
 	map.addLayer(mosaics.last());
 	refreshLayersList(map);
+}
+
+function insertAuthData(url) {
+	var user = getUsername();
+	var pass = getPassword();
+	if ((user === "undefined") || (pass === "undefined")) {
+		return url;
+	} else {
+		return url.insert(7, user + ":" + pass + "@");
+	}
 }
 
 // handler on show layers list window

@@ -276,14 +276,42 @@ function setLanguageFromULR() {
 
 function login(username, _password) {
 	$("span#m_user_username").text(username);
+	// UGLY
 	$("#menu_login_user").hide();
 	$("#menu_logout_user").show();
+	sessionStorage['username'] = username;
+	sessionStorage['password'] = _password;
 }
 
 function logout() {
 	$("span#m_user_username").text(tr('menu:user:default_username')); // just in case
+	// UGLY
 	$("#menu_login_user").show();
 	$("#menu_logout_user").hide();
+	clearSession();
+}
+
+function loginFromSession() {
+	// kinda UGLY code
+	// also, SECURITY measures!
+	if ((!(sessionStorage['username'] === "undefined")) && (!(sessionStorage['password'] === "undefined"))) {
+		login(sessionStorage['username'], sessionStorage['password']);
+	} else {
+		logout(); // just in case
+	}
+}
+
+function clearSession() {
+	sessionStorage['username'] = undefined;
+	sessionStorage['password'] = undefined;
+}
+
+function getUsername() {
+	return sessionStorage['username'];
+}
+
+function getPassword() {
+	return sessionStorage['password'];
 }
 
 $(document).ready(function() {
@@ -291,4 +319,5 @@ $(document).ready(function() {
 	setLanguageFromULR();
 	// perform DOM localization
 	translate();
+	loginFromSession();
 });

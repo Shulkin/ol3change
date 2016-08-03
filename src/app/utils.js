@@ -6,6 +6,14 @@ Array.prototype.last = function() {
 	return this[this.length - 1];
 }
 
+String.prototype.insert = function (index, string) {
+	if (index > 0) {
+		return this.substring(0, index) + string + this.substring(index, this.length);
+	} else {
+		return string + this;
+	}
+};
+
 function zoomToFullExtent() {
 	map.getView().setCenter(center_max);
 	map.getView().setZoom(zoom_max);
