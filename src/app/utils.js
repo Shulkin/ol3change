@@ -64,20 +64,3 @@ function onMap(map, _layer) {
 	});
 	return result;
 }
-
-// default 'sorry, not working' message
-function m_con() {
-	error(tr("error:under_construction"));
-}
-
-function message(str) {
-	$("#msg > div > div.modal-content > div.modal-header > .modal-title").text(""); // clear
-	$("#msg > div > div.modal-content > div.modal-body > p").text(str);
-	$("#msg").modal("show"); 
-}
-
-function error(str) {
-	$("#msg > div > div.modal-content > div.modal-header > .modal-title").text(tr("error:title"));
-	$("#msg > div > div.modal-content > div.modal-body > p").text(str);
-	$("#msg").modal("show"); 
-}

@@ -6,6 +6,7 @@
  * @require LayersControl.js
  * @require translate.js
  * @require local.js
+ * @require modal.js
  * @require utils.js
  * @require lib.js
  */

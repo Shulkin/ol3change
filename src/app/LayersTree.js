@@ -104,22 +104,23 @@ function loadLayers() {
 	if (service.substr(service.length - 1) != "?") {
 		service += "?";
 	}
-	//http://ol3change_admin:admin@gis.dvo.ru:8080/geoserver/wms?service=wms&request=GetCapabilities
-	
 	$.ajax({
 		type: "GET",
-		
-		//username: "ol3change_admin",
-		//password: "admin",
-		
-		//headers: {"Origin": "true"},
-		
-		//headers: {"Authorization": "Basic " + btoa("Shulkin" + ":" + "5121988")}, // works!
-		headers: {"Authorization": "Basic " + btoa("ol3change_admin" + ":" + "admin")}, // works!
-		//headers: {"Authorization": "Basic " + encodeAuthData(), "Origin": "true"},
-		//headers: {"Authorization": "Basic " + encodeAuthData(), "Origin": "true"},
-		
+		// send header with authorization info
+		// CORS needs to be enabled on server
+		headers: {
+			"Authorization": "Basic " + btoa(getUsername() + ":" + getPassword()),
+			"Access-Control-Allow-Credentials": true,
+			"Access-Control-Allow-Origin": "*"
+		},
 		url: service + "service=WMS&request=GetCapabilities"
+	}).success(function (response, _status) {
+		console.log("Server returned success! Status: " + _status);
+	}).error(function (jqXHR, _status, _error) {
+		console.log("Server returned error! Status: " + _status + ", jqXHR: " + JSON.stringify(jqXHR));
+		var msg1 = tr("error:server_returned_error");
+		var msg2 = tr("error:not_logged_in");
+		error_lot([msg1 + ": [" + _status + "]", msg2]);
 	}).done(function (response) {
 		console.log("Got response from server!");
 		var result = parser.read(response);
