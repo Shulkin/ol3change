@@ -41,7 +41,7 @@ function updateTreeview(array, view) {
 		var nobr = document.createElement("nobr"); // HACK
 		p.appendChild(nobr);
 		if (isArray(obj)) {
-			li.className = "cl"; //closed by default
+			li.className = "cl"; // closed by default
 			var a = document.createElement("a");
 			a.setAttribute("class", "sc");
 			a.setAttribute("style", "cursor:pointer");
@@ -108,11 +108,7 @@ function loadLayers() {
 		type: "GET",
 		// send header with authorization info
 		// CORS needs to be enabled on server
-		headers: {
-			"Authorization": "Basic " + btoa(getUsername() + ":" + getPassword()),
-			"Access-Control-Allow-Credentials": true,
-			"Access-Control-Allow-Origin": "*"
-		},
+		headers: {"Authorization": make_base_auth(getUsername(), getPassword())},
 		url: service + "service=WMS&request=GetCapabilities"
 	}).success(function (response, _status) {
 		console.log("Server returned success! Status: " + _status);
@@ -132,43 +128,6 @@ function loadLayers() {
 		updateLayersDOM();
 		console.log("Done!");
 	});
-	
-	/*
-	$.ajax({
-		url: "http://gis.dvo.ru:8080/geoserver/j_spring_security_check", // j_spring_security_check
-		type: "POST",
-		crossDomain: true,
-		dataType: 'text',
-		contentType: 'application/x-www-form-urlencoded',//text/plain',application/json
-		data: {
-			username: 'ol3change_admin',
-			password: 'admin'
-		},
-		xhrFields: {
-			withCredentials: true
-		},
-		headers: {
-			"Access-Control-Allow-Credentials": true,
-			"Access-Control-Allow-Origin": "*"
-		}
-	}).success(function(data, textStatus) {
-		console.log('success data: ' + data, '|  success textStatus: ' + textStatus);
-	}).error(function(jqXHR, textStatus, errorThrown) {
-		console.log('error errorThrown: ' + errorThrown, '|  error textStatus: ' + textStatus);
-	}).complete(function(jqXHR, textStatus) {
-		console.log('complete textStatus: ' + textStatus);
-		//var tis = new ol.layer.Image({
-		//	source: new ol.source.ImageWMS({
-		//		url: 'http://localhost:8080/geoserver/wms?',
-		//		params: {
-		//			"Authorization": make_base_auth("admin", "geoserver"),
-		//			'VERSION': '1.1.0',
-		//			'LAYERS': 'tis:admin', 
-		//			'transparent': 'true'
-		//		}
-		//	})
-	});
-	*/
 }
 
 // get all checked layers from list and add to map one by one
@@ -182,13 +141,25 @@ function addComposition() {
 	}
 }
 
+function make_base_auth(user, password) {
+	return "Basic " + btoa(user + ":" + password);
+}
+
 function customLoader(tile, src) {
 	var client = new XMLHttpRequest();
 	client.open('GET', src);
-	client.setRequestHeader('Authorization', "Basic " + btoa("Shulkin" + ":" + "5121988"));
+	client.responseType = 'arraybuffer';
+	client.setRequestHeader('Authorization', make_base_auth(getUsername(), getPassword()));
 	client.onload = function() {
-		var data = 'data:image/png;base64,' + btoa(unescape(encodeURIComponent(this.responseText)));
-		tile.getImage().src = data;
+		var type = client.getResponseHeader('content-type');
+		var uInt8Array = new Uint8Array(this.response);
+		var i = uInt8Array.length;
+		var binaryString = new Array(i);
+		while (i--) {
+			binaryString[i] = String.fromCharCode(uInt8Array[i]);
+		}
+		var data = binaryString.join('');
+		tile.getImage().src = 'data:' + type + ';base64,' + btoa(data);
 	};
 	client.send();
 }
@@ -212,26 +183,6 @@ function pushMosaic(service, layerName, title, isDelete) {
 	map.addLayer(mosaics.last());
 	refreshLayersList(map);
 }
-
-/*
-function insertAuthData(url) {
-	var user = getUsername();
-	var pass = getPassword();
-	if ((user === "undefined") || (pass === "undefined")) {
-		return url;
-	} else {
-		return url.insert(7, user + ":" + pass + "@");
-	}
-}
-*/
-
-/*
-function encodeAuthData() {
-	//return getUsername() + ":" + getPassword();
-	// ol3change_admin:admin
-	return "b2wzY2hhbmdlX2FkbWluOmFkbWlu";
-}
-*/
 
 // handler on show layers list window
 $('#layers').on('shown.bs.modal', function() {
