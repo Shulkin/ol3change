@@ -114,9 +114,7 @@ function loadLayers() {
 		console.log("Server returned success! Status: " + _status);
 	}).error(function (jqXHR, _status, _error) {
 		console.log("Server returned error! Status: " + _status + ", jqXHR: " + JSON.stringify(jqXHR));
-		var msg1 = tr("error:server_returned_error");
-		var msg2 = tr("error:not_logged_in");
-		error_lot([msg1 + ": [" + _status + "]", msg2]);
+		server_login_error(_status);
 	}).done(function (response) {
 		console.log("Got response from server!");
 		var result = parser.read(response);
@@ -151,15 +149,20 @@ function customLoader(tile, src) {
 	client.responseType = 'arraybuffer';
 	client.setRequestHeader('Authorization', make_base_auth(getUsername(), getPassword()));
 	client.onload = function() {
-		var type = client.getResponseHeader('content-type');
-		var uInt8Array = new Uint8Array(this.response);
-		var i = uInt8Array.length;
-		var binaryString = new Array(i);
-		while (i--) {
-			binaryString[i] = String.fromCharCode(uInt8Array[i]);
+		if (client.status === 200) {
+			var type = client.getResponseHeader('content-type');
+			var uInt8Array = new Uint8Array(client.response);
+			var i = uInt8Array.length;
+			var binaryString = new Array(i);
+			while (i--) {
+				binaryString[i] = String.fromCharCode(uInt8Array[i]);
+			}
+			var data = binaryString.join('');
+			tile.getImage().src = 'data:' + type + ';base64,' + btoa(data);
+		} else {
+			tile.getImage().src = src;
+			server_login_error(client.statusText);
 		}
-		var data = binaryString.join('');
-		tile.getImage().src = 'data:' + type + ';base64,' + btoa(data);
 	};
 	client.send();
 }

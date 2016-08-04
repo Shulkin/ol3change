@@ -3,6 +3,17 @@ function m_con() {
 	error(tr("error:under_construction"));
 }
 
+// default 'server error, try to login' message
+function server_login_error(error_status = "") {
+	var msg1 = tr("error:server_returned_error");
+	var msg2 = tr("error:not_logged_in");
+	if (error_status != "") {
+		error_lot([msg1 + ": [" + error_status + "]", msg2]);
+	} else {
+		error(msg2);
+	}
+}
+
 function setModalTitle(str) {
 	$("#msg > div > div.modal-content > div.modal-header > .modal-title").text(str);
 }
