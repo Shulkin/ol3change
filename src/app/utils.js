@@ -2,6 +2,10 @@ function isArray(obj) {
 	return (Object.prototype.toString.call(obj) === "[object Array]");
 }
 
+function notUndefined(obj) {
+	return ((obj != undefined) && (obj != 'undefined'));
+}
+
 Array.prototype.last = function() {
 	return this[this.length - 1];
 }
