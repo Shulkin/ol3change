@@ -4,7 +4,7 @@ function m_con() {
 }
 
 // default 'server error, try to login' message
-function server_login_error(error_status = "") {
+function server_login_error(error_status) {
 	var msg1 = tr("error:server_returned_error");
 	var msg2 = tr("error:not_logged_in");
 	if (error_status != "") {

@@ -104,11 +104,20 @@ function loadLayers() {
 	if (service.substr(service.length - 1) != "?") {
 		service += "?";
 	}
+	var user = getUsername();
+	var password = getPassword();
+	var auth_headers; // for authorization
+	if (anonymous(user, password)) {
+		// anonymous access, do not send authorization headers
+		auth_headers = {};
+	} else {
+		auth_headers = {"Authorization": make_base_auth(user, password)};
+	}
 	$.ajax({
 		type: "GET",
 		// send header with authorization info
 		// CORS needs to be enabled on server
-		headers: {"Authorization": make_base_auth(getUsername(), getPassword())},
+		headers: auth_headers,
 		url: service + "service=WMS&request=GetCapabilities"
 	}).success(function (response, _status) {
 		console.log("Server returned success! Status: " + _status);
@@ -147,7 +156,11 @@ function customLoader(tile, src) {
 	var client = new XMLHttpRequest();
 	client.open('GET', src);
 	client.responseType = 'arraybuffer';
-	client.setRequestHeader('Authorization', make_base_auth(getUsername(), getPassword()));
+	var user = getUsername();
+	var password = getPassword();
+	if (!anonymous(user, password)) {
+		client.setRequestHeader('Authorization', make_base_auth(user, password));
+	}
 	client.onload = function() {
 		if (client.status === 200) {
 			var type = client.getResponseHeader('content-type');
@@ -160,7 +173,7 @@ function customLoader(tile, src) {
 			var data = binaryString.join('');
 			tile.getImage().src = 'data:' + type + ';base64,' + btoa(data);
 		} else {
-			tile.getImage().src = src;
+			tile.getImage().src = null; // are you sure?
 			server_login_error(client.statusText);
 		}
 	};

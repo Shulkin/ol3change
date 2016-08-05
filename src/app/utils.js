@@ -2,8 +2,13 @@ function isArray(obj) {
 	return (Object.prototype.toString.call(obj) === "[object Array]");
 }
 
-function notUndefined(obj) {
-	return ((obj != undefined) && (obj != 'undefined'));
+function isUndefined(obj) {
+	return ((obj === undefined) || (obj === "undefined"));
+}
+
+// anonymous if user or password is undefined
+function anonymous(user, password) {
+	return (isUndefined(user) || isUndefined(password));
 }
 
 Array.prototype.last = function() {

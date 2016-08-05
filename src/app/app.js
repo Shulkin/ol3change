@@ -282,12 +282,12 @@ function setLanguageFromULR() {
 	}
 }
 
-function login(username, password) {
-	$("span#m_user_username").text(username);
+function login(user, password) {
+	$("span#m_user_username").text(user);
 	// UGLY
 	$("#menu_login_user").hide();
 	$("#menu_logout_user").show();
-	sessionStorage['username'] = username;
+	sessionStorage['username'] = user;
 	sessionStorage['password'] = password;
 }
 
@@ -302,10 +302,11 @@ function logout() {
 function loginFromSession() {
 	// kinda UGLY code
 	// also, SECURITY issues!
-	var username = sessionStorage['username'];
+	var user = sessionStorage['username'];
 	var password = sessionStorage['password'];
-	if (notUndefined(username) && notUndefined(password)) {
-		login(username, password);
+	if (!anonymous(user, password)) {
+		// user in active session is present
+		login(user, password);
 	} else {
 		logout(); // just in case
 	}

@@ -82,7 +82,7 @@ var messages = {
 			under_construction: "Under construction...",
 			invalid_layer: "Invalid layer",
 			server_returned_error: "Server returned an error",
-			not_logged_in: "Oops, you are not authorized to access this resource! Try to login"
+			not_logged_in: "Oops, you are not authorized to access this resource! Try to login."
 		}
 	},
 	ru: {
@@ -168,7 +168,7 @@ var messages = {
 			under_construction: "Пока не работает...",
 			invalid_layer: "Неправильный слой",
 			server_returned_error: "Сервер вернул ошибку",
-			not_logged_in: "У вас недостаточно прав для доступа к этому ресурсу. Попробуйте войти в систему"
+			not_logged_in: "У вас недостаточно прав для доступа к этому ресурсу. Попробуйте войти в систему."
 		}
 	}
 };
