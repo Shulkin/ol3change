@@ -177,6 +177,7 @@ function pushMosaic(service, layerName, title, isDelete) {
 	tile.setTileLoadFunction(customLoader);
 	var new_layer = new ol.layer.Tile({
 		title: title,
+		name: layerName,
 		group: "imagery",
 		visible: false,
 		deletable: isDelete,

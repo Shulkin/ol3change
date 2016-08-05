@@ -50,6 +50,7 @@ $(popup).on('close', function() {
 // basemaps
 var bing = new ol.layer.Tile({
 	title: 'Bing Maps',
+	name: 'bing',
 	group: "background",
 	visible: false,
 	deletable: false,
@@ -63,6 +64,7 @@ var bing = new ol.layer.Tile({
 });
 var osm = new ol.layer.Tile({
 	title: 'OpenStreetMap',
+	name: 'osm',
 	group: "background",
 	visible: true,
 	deletable: false,
@@ -71,6 +73,7 @@ var osm = new ol.layer.Tile({
 // cadastre overlay
 var cadastre = new ol.layer.Tile({
 	title: 'Кадастр',
+	name: 'cadastre',
 	visible: false,
 	deletable: false,
 	source: new ol.source.TileWMS({
@@ -147,6 +150,10 @@ function initSatelliteMosaics() {
 	pushMosaic(default_geoserver, "Mosaic1_ChangeDetection:Mosaic_20110224_part2_1m", "Владивосток 1м 2010_2", false);
 	pushMosaic(default_geoserver, "Mosaic2_ChangeDetection:Mosaic_201207161_1m", "Владивосток 1м 2012", false);
 	pushMosaic(default_geoserver, "Mosaic3_Resurs_ChangeDetection:Mosaic_UTM521", "Владивосток 1м 2015", false);
+	// HACK
+	// move cadastre and highlight on top
+	cadastre.setZIndex(9998);
+	highlight.setZIndex(9999); // on top
 }
 
 function l_div(title, id) {
@@ -294,7 +301,7 @@ function logout() {
 
 function loginFromSession() {
 	// kinda UGLY code
-	// also, SECURITY measures!
+	// also, SECURITY issues!
 	if ((!(sessionStorage['username'] === "undefined")) && (!(sessionStorage['password'] === "undefined"))) {
 		login(sessionStorage['username'], sessionStorage['password']);
 	} else {

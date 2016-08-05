@@ -47,18 +47,18 @@ function getAllLayers(map) {
 			layer.getLayers().getArray().forEach(function(sublayer, j, layers) {
 				result.push(sublayer);
 			})
-		} else if (!(layer instanceof ol.layer.Group)/* && layer.getVisible() == true*/) {
+		} else if (!(layer instanceof ol.layer.Group)) {
 			result.push(layer);
 		}
 	});
 	return result;
 }
 
-function onMap(map, _layer) {
+function onMap(map, layer) {
 	var result = false;
 	var array = getAllLayers(map);
-	array.forEach(function(layer) {
-		if (layer.get('title') === _layer.get('title')) {
+	array.forEach(function(lar) {
+		if (lar.get('title') === layer.get('title')) {
 			result = true;
 		}
 	});
