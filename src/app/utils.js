@@ -67,9 +67,25 @@ function onMap(map, layer) {
 	var result = false;
 	var array = getAllLayers(map);
 	array.forEach(function(lar) {
-		if (lar.get('title') === layer.get('title')) {
+		// name is unique id for layer
+		if (lar.get('name') === layer.get('name')) {
 			result = true;
 		}
 	});
 	return result;
+}
+
+// generate some unique id
+function uid () {
+	// desired length of id
+	var idStrLen = 32;
+	// always start with a letter - base 36 makes for a nice shortcut
+	var idStr = (Math.floor((Math.random() * 25)) + 10).toString(36) + "_";
+	// add a timestamp in milliseconds (base 36 again) as the base
+	idStr += (new Date()).getTime().toString(36) + "_";
+	// similar to above, complete the Id using random, alphanumeric characters
+	do {
+		idStr += (Math.floor((Math.random() * 35))).toString(36);
+	} while (idStr.length < idStrLen);
+	return (idStr);
 }

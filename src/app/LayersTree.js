@@ -190,7 +190,7 @@ function pushMosaic(service, layerName, title, isDelete) {
 	tile.setTileLoadFunction(customLoader);
 	var new_layer = new ol.layer.Tile({
 		title: title,
-		name: layerName,
+		name: layerName + "_" + uid(),
 		group: "imagery",
 		visible: false,
 		deletable: isDelete,
@@ -199,6 +199,15 @@ function pushMosaic(service, layerName, title, isDelete) {
 	mosaics.push(new_layer);
 	map.addLayer(mosaics.last());
 	refreshLayersList(map);
+}
+
+function removeMosaic(layerName) {
+	for (var i = 0; i < mosaics.length; i++) {
+		if (mosaics[i].get('name') === layerName) {
+			// found, delete!
+			mosaics.splice(i, 1);
+		}
+	}
 }
 
 // handler on show layers list window

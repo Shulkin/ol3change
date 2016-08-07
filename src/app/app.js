@@ -50,7 +50,7 @@ $(popup).on('close', function() {
 // basemaps
 var bing = new ol.layer.Tile({
 	title: 'Bing Maps',
-	name: 'bing',
+	name: 'bing', // don't add uid
 	group: "background",
 	visible: false,
 	deletable: false,
@@ -64,7 +64,7 @@ var bing = new ol.layer.Tile({
 });
 var osm = new ol.layer.Tile({
 	title: 'OpenStreetMap',
-	name: 'osm',
+	name: 'osm', // also don't need uid
 	group: "background",
 	visible: true,
 	deletable: false,
@@ -73,7 +73,7 @@ var osm = new ol.layer.Tile({
 // cadastre overlay
 var cadastre = new ol.layer.Tile({
 	title: 'Кадастр',
-	name: 'cadastre',
+	name: 'cadastre', // same here, no uid
 	visible: false,
 	deletable: false,
 	source: new ol.source.TileWMS({

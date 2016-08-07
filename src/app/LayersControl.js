@@ -106,6 +106,7 @@ app.LayersControl.prototype.setMap = function(map) {
 						var map = evt.data[0];
 						var layer = evt.data[1];
 						map.removeLayer(layer);
+						removeMosaic(layer.get('name'));
 						refreshLayersList(map);
 					}).appendTo(item);
 				}
