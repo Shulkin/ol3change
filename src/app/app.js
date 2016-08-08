@@ -77,7 +77,7 @@ var cadastre = new ol.layer.Tile({
 	visible: false,
 	deletable: false,
 	source: new ol.source.TileWMS({
-		url: 'http://maps.rosreestr.ru/arcgis/services/Cadastre/CadastreWMS/MapServer/WMSServer',
+		url: 'http://pkk5.rosreestr.ru/arcgis/services/Cadastre/CadastreWMS/MapServer/WMSServer',
 		params: {'LAYERS': '24,23,22,21,20,13,12,11,9,8,6,5,4,3,2,1,18,17,16,15', 'TILED': true},
 		serverType: 'mapserver'
 	})
