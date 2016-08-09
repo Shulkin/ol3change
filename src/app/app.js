@@ -270,8 +270,9 @@ function validParam(obj) {
 
 function changeLanguage(code) {
 	// force reload page
-	// TODO: change localhost to default url before ?
-	location.href = "http://localhost:9080?lang=" + code;
+	// remove previous params and links, leave only base url
+	var href = location.href.split("?")[0].split("#")[0];
+	location.href = href + "?lang=" + code;
 }
 
 function setLanguageFromULR() {
