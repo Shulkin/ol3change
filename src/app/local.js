@@ -73,8 +73,9 @@ var messages = {
 			},
 			method: {
 				title: "Change detection method",
-				comp: "Multitemporal composite",
-				diff: "Image difference"
+				composite: "Multitemporal composite",
+				difference: "Image difference",
+				ratio: "Image ratio"
 			}
 		},
 		error: {
@@ -159,8 +160,9 @@ var messages = {
 			},
 			method: {
 				title: "Метод определения изменений",
-				comp: "Мультивременной композит",
-				diff: "Попиксельная разность"
+				composite: "Мультивременной композит",
+				difference: "Попиксельная разность",
+				ratio: "Попиксельное соотношение"
 			}
 		},
 		error: {

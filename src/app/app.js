@@ -180,8 +180,9 @@ function m_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('change:method:title'));
 	var list = $("<select id='method'>");
-	list.append("<option value=0>" + tr('change:method:comp') + "</option>");
-	list.append("<option value=1>" + tr('change:method:diff') + "</option>");
+	list.append("<option value=0>" + tr('change:method:composite') + "</option>");
+	list.append("<option value=1>" + tr('change:method:difference') + "</option>");
+	list.append("<option value=2>" + tr('change:method:ratio') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;

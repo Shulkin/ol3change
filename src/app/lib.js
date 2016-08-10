@@ -24,8 +24,25 @@ function difference(src, dst) {
 	return pixel;
 }
 
+// image ratio
+function ratio(src, dst) {
+	var pixel = [0,0,0,0]; // result
+	// image ratio
+	var threshold = 0.7; // ?
+	var mean_src = (src[0] + src[1] + src[2]) / 3;
+	var mean_dst = (dst[0] + dst[1] + dst[2]) / 3;
+	if (mean_dst === 0) mean_dst += 0.1; // ?
+	var ratio = mean_src / mean_dst;
+	if (ratio > threshold) {
+		pixel = [255,0,0,255]; // major change
+	} else {
+		pixel = [0,0,0,0]; // transparent
+	}
+	return pixel;
+}
+
 // array of process functions
-var f_array = [composite, difference];
+var f_array = [composite, difference, ratio];
 
 function changeDetection(method) {
 	var func = f_array[method] // process function
@@ -49,6 +66,38 @@ function changeDetection(method) {
 		lib: {
 			get: get,
 			process: func
+		}
+	});
+	// simple blur, remove pixels with less than 3 neighbours
+	var classified = new ol.source.Raster({
+		sources: [raster],
+		operationType: 'image',
+		operation: function(inputs, data) {
+			var image = inputs[0]; // source image
+			var width = image.width;
+			var height = image.height;
+			var inputData = image.data;
+			//var outputData = new Uint8ClampedArray(inputData);
+			/*
+			for (var i = 0; i < inputData.length; i++) {
+				var p_r = inputData[i];
+				var p_g = inputData[i + 1];
+				var p_b = inputData[i + 2];
+				var p_a = inputData[i + 3];
+				if (p_a === 255) {
+					outputData[i] = 0;
+					outputData[i + 1] = 255;
+					outputData[i + 2] = 0;
+					outputData[i + 3] = 255;
+				} else {
+					outputData[i] = p_r;
+					outputData[i + 1] = p_g;
+					outputData[i + 2] = p_b;
+					outputData[i + 3] = p_a;
+				}
+			}
+			*/
+			return {data: inputData, width: width, height: height};
 		}
 	});
 	var img = new ol.layer.Image({
