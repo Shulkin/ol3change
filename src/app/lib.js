@@ -42,11 +42,63 @@ function ratio(src, dst) {
 	return pixel;
 }
 
+// gaussian blut
+function gaussian(image) {
+	// image - source image
+	/*
+	var width = image.width;
+	var height = image.height;
+	var inputData = image.data;
+	var outputData = new Uint8ClampedArray(inputData);
+	return {data: outputData, width: width, height: height};
+	*/
+	return null;
+}
+
+// median filter
+function median(image) {
+	return null;
+}
+
 // array of process functions
-var f_array = [composite, difference, ratio];
+var functions = [composite, difference, ratio];
+// array of filter functions
+var filters = [gaussian, median];
+
+function addResult(source, title) {
+	var img = new ol.layer.Image({
+		title: title,
+		group: "imagery",
+		deletable: true,
+		source: source
+	});
+	map.addLayer(img);
+	refreshLayersList(map);
+}
+
+function postProcessing(type) {
+	alert("postProcessing: " + type);
+	var func = filters[type]; // choose filter type
+	var id = get("layer_filter");
+	if (id === 'null') {
+		error(tr("error:invalid_layer"));
+		return;
+	}
+	// do filter
+	var raster = new ol.source.Raster({
+		sources: [raster],
+		operationType: 'image',
+		operation: function(inputs, data) {
+			return filter(inputs[0]);
+		},
+		lib: {filter: func}
+	});
+	// add result image layer to map
+	addResult(raster, "Результат");
+}
 
 function changeDetection(method) {
-	var func = f_array[method] // process function
+	var func = functions[method] // process function
 	var id1 = get("layer1");
 	var id2 = get("layer2");
 	if (id1 === 'null' || id2 === 'null') {
@@ -67,45 +119,6 @@ function changeDetection(method) {
 		},
 		lib: {process: func}
 	});
-	// simple blur, remove pixels with less than 3 neighbours
-	var classified = new ol.source.Raster({
-		sources: [raster],
-		operationType: 'image',
-		operation: function(inputs, data) {
-			var image = inputs[0]; // source image
-			var width = image.width;
-			var height = image.height;
-			var inputData = image.data;
-			//var outputData = new Uint8ClampedArray(inputData);
-			/*
-			for (var i = 0; i < inputData.length; i++) {
-				var p_r = inputData[i];
-				var p_g = inputData[i + 1];
-				var p_b = inputData[i + 2];
-				var p_a = inputData[i + 3];
-				if (p_a === 255) {
-					outputData[i] = 0;
-					outputData[i + 1] = 255;
-					outputData[i + 2] = 0;
-					outputData[i + 3] = 255;
-				} else {
-					outputData[i] = p_r;
-					outputData[i + 1] = p_g;
-					outputData[i + 2] = p_b;
-					outputData[i + 3] = p_a;
-				}
-			}
-			*/
-			return {data: inputData, width: width, height: height};
-		}
-	});
 	// add result image layer to map
-	var img = new ol.layer.Image({
-		title: "Результат",
-		group: "imagery",
-		deletable: true,
-		source: raster
-	});
-	map.addLayer(img);
-	refreshLayersList(map);
+	addResult(raster, "Результат");
 }

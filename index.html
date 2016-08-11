@@ -80,6 +80,14 @@
 									&nbsp;&nbsp;<span id="m_service_change"></span>
 								</span>
 							</a></li>
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in">
+								<span data-toggle="modal" data-target="#filter">
+									<i class="fa fa-filter"></i>
+									&nbsp;&nbsp;Фильтрация
+								</span>
+							</a></li>
 						</ul>
 					</li>
 					<li class="dropdown">
@@ -185,6 +193,26 @@
 							class="btn btn-default" data-dismiss="modal"
 							onclick="changeDetection(get('method')); return false;">
 							<span id="md_change_confirm"></span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- modal dialog 2, post processing options -->
+		<div id="filter" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<!-- content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Применить фильтр</h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button"
+							class="btn btn-default" data-dismiss="modal"
+							onclick="postProcessing(get('filter_type')); return false;">Запуск
 						</button>
 					</div>
 				</div>
