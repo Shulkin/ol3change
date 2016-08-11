@@ -31,9 +31,10 @@ function ratio(src, dst) {
 	var threshold = 0.7; // ?
 	var mean_src = (src[0] + src[1] + src[2]) / 3;
 	var mean_dst = (dst[0] + dst[1] + dst[2]) / 3;
-	if (mean_dst === 0) mean_dst += 0.1; // ?
-	var ratio = mean_src / mean_dst;
-	if (ratio > threshold) {
+	if (mean_src === 0) mean_src += 1; // ?
+	if (mean_dst === 0) mean_dst += 1; // ?
+	var ratio = Math.min(mean_src, mean_dst) / Math.max(mean_src, mean_dst);
+	if (ratio > threshold) { // more than 0.5 ratio
 		pixel = [255,0,0,255]; // major change
 	} else {
 		pixel = [0,0,0,0]; // transparent
@@ -52,6 +53,7 @@ function changeDetection(method) {
 		error(tr("error:invalid_layer"));
 		return;
 	}
+	// process by chosen method
 	var raster = new ol.source.Raster({
 		sources: [mosaics[id1].getSource(), mosaics[id2].getSource()],
 		/**
@@ -63,10 +65,7 @@ function changeDetection(method) {
 		operation: function(pixels, data) {
 			return process(pixels[0], pixels[1]);
 		},
-		lib: {
-			get: get,
-			process: func
-		}
+		lib: {process: func}
 	});
 	// simple blur, remove pixels with less than 3 neighbours
 	var classified = new ol.source.Raster({
@@ -100,6 +99,7 @@ function changeDetection(method) {
 			return {data: inputData, width: width, height: height};
 		}
 	});
+	// add result image layer to map
 	var img = new ol.layer.Image({
 		title: "Результат",
 		group: "imagery",
