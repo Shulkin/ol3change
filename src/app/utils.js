@@ -63,6 +63,18 @@ function getAllLayers(map) {
 	return result;
 }
 
+function getLayerByName(map, name) {
+	var array = getAllLayers(map);
+	array.forEach(function(layer) {
+		// name is unique id for layer
+		if (layer.get('name') === name) {
+			return layer;
+		}
+	});
+	// return null if layer not found
+	return null;
+}
+
 function onMap(map, layer) {
 	var result = false;
 	var array = getAllLayers(map);

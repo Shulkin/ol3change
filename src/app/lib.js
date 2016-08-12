@@ -65,9 +65,10 @@ var functions = [composite, difference, ratio];
 // array of filter functions
 var filters = [gaussian, median];
 
-function addResult(source, title) {
+function addResult(source, title, name) {
 	var img = new ol.layer.Image({
 		title: title,
+		name: name,
 		group: "imagery",
 		deletable: true,
 		source: source
@@ -79,14 +80,19 @@ function addResult(source, title) {
 function postProcessing(type) {
 	alert("postProcessing: " + type);
 	var func = filters[type]; // choose filter type
-	var id = get("layer_filter");
-	if (id === 'null') {
+	var name = get("layer_filter");
+	if (name === 'null') {
 		error(tr("error:invalid_layer"));
+		return;
+	}
+	var layer = getLayerByName(map, name);
+	if (layer === null) {
+		//error: layer not found
 		return;
 	}
 	// do filter
 	var raster = new ol.source.Raster({
-		sources: [raster],
+		sources: [layer],
 		operationType: 'image',
 		operation: function(inputs, data) {
 			return filter(inputs[0]);
@@ -94,13 +100,13 @@ function postProcessing(type) {
 		lib: {filter: func}
 	});
 	// add result image layer to map
-	addResult(raster, "Результат");
+	addResult(raster, "Фильтр [" + id + "]", "filter_" + uid());
 }
 
 function changeDetection(method) {
 	var func = functions[method] // process function
-	var id1 = get("layer1");
-	var id2 = get("layer2");
+	var id1 = get("layer_change_1");
+	var id2 = get("layer_change_2");
 	if (id1 === 'null' || id2 === 'null') {
 		error(tr("error:invalid_layer"));
 		return;
@@ -120,5 +126,5 @@ function changeDetection(method) {
 		lib: {process: func}
 	});
 	// add result image layer to map
-	addResult(raster, "Результат");
+	addResult(raster, "Изменения [" + id1 + ", " + id2 + "]", "change_" + uid());
 }

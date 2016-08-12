@@ -40,6 +40,10 @@ var messages = {
 				title: "Change detection",
 				_confirm: "Start"
 			},
+			filter: {
+				title: "Apply filter",
+				_confirm: "Apply"
+			},
 			msg: {
 				_close: "Close"
 			},
@@ -125,6 +129,10 @@ var messages = {
 		modal: {
 			change: {
 				title: "Найти изменения",
+				_confirm: "Запуск"
+			},
+			filter: {
+				title: "Применить фильтр",
 				_confirm: "Запуск"
 			},
 			msg: {

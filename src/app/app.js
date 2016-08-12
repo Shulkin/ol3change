@@ -176,6 +176,22 @@ function l_div(title, id) {
 	return div;
 }
 
+function l2_div(title, id) {
+	var div = $("<div>");
+	var p = $("<p></p>").text(title);
+	var list = $("<select id='" + id + "'>");
+	var array = getAllLayers(map); // get all layers on map
+	for (var i = 0; i < array.length; i++) {
+		list.append("<option value=" + array[i].get("name") + ">" + array[i].get("title") + "</option>");
+	}
+	if (!(array.length > 0)) { // no layers
+		list.append("<option value='" + null + "'>" + tr('change:no_layers') + "</option>");
+	}
+	list.append("</select>");
+	div.append(p, list, "</div>");
+	return div;
+}
+
 function m_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('change:method:title'));
@@ -188,15 +204,36 @@ function m_div() {
 	return div;
 }
 
-// handler on show confirm window
+function f_div() {
+	var div = $("<div>");
+	var p = $("<p></p>").text("Выберите фильтр");
+	var list = $("<select id='filter_type'>");
+	list.append("<option value=0>" + "Размытие по Гауссу" + "</option>");
+	list.append("<option value=1>" + "Медианный фильтр" + "</option>");
+	list.append("</select>");
+	div.append(p, list, "</div>");
+	return div;
+}
+
+// handler on show change detection window
 $('#confirm').on('shown.bs.modal', function() {
 	var elem = $("#confirm > div > div.modal-content > div.modal-body");
 	elem.html(""); // clear previous html
 	elem.append(
 		// layers
-		l_div(tr('change:_layer:first'), "layer1"),
-		l_div(tr('change:_layer:second'), "layer2"),
+		l_div(tr('change:_layer:first'), "layer_change_1"),
+		l_div(tr('change:_layer:second'), "layer_change_2"),
 		m_div() // method
+	);
+});
+
+// handler on show post processing window
+$('#filter').on('shown.bs.modal', function() {
+	var elem = $("#filter > div > div.modal-content > div.modal-body");
+	elem.html(""); // clear previous html
+	elem.append(
+		l2_div("Выберите слой", "layer_filter"), // filtered layer
+		f_div() // filter type
 	);
 });
 
