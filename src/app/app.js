@@ -33,6 +33,8 @@ var popup = new app.Popup({
 
 // create a vector layer to contain the feature to be highlighted
 var highlight = new ol.layer.Vector({
+	title: 'Подсветка',
+	name: 'highlight', // no uid
 	style: new ol.style.Style({
 		stroke: new ol.style.Stroke({
 			color: '#00FFFF',
@@ -156,6 +158,7 @@ function initSatelliteMosaics() {
 	highlight.setZIndex(9999); // on top
 }
 
+/*
 function l_div(title, id) {
 	var div = $("<div>");
 	var p = $("<p></p>").text(title);
@@ -175,8 +178,9 @@ function l_div(title, id) {
 	div.append(p, list, "</div>");
 	return div;
 }
+*/
 
-function l2_div(title, id) {
+function l_div(title, id) {
 	var div = $("<div>");
 	var p = $("<p></p>").text(title);
 	var list = $("<select id='" + id + "'>");
@@ -208,8 +212,12 @@ function f_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text("Выберите фильтр");
 	var list = $("<select id='filter_type'>");
-	list.append("<option value=0>" + "Размытие по Гауссу" + "</option>");
-	list.append("<option value=1>" + "Медианный фильтр" + "</option>");
+	list.append("<option value=none>" + "Нет" + "</option>");
+	list.append("<option value=sharpen>" + "Увеличить резкость" + "</option>");
+	list.append("<option value=sharpenless>" + "Уменьшить резкость" + "</option>");
+	list.append("<option value=blur>" + "Размытие" + "</option>");
+	list.append("<option value=gaussian>" + "Размытие по Гауссу" + "</option>");
+	list.append("<option value=edge>" + "Детектор граней" + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
@@ -232,7 +240,7 @@ $('#filter').on('shown.bs.modal', function() {
 	var elem = $("#filter > div > div.modal-content > div.modal-body");
 	elem.html(""); // clear previous html
 	elem.append(
-		l2_div("Выберите слой", "layer_filter"), // filtered layer
+		l_div("Выберите слой", "layer_filter"), // filtered layer
 		f_div() // filter type
 	);
 });
