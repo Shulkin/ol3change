@@ -150,7 +150,7 @@ function postProcessing(type) {
 	}
 	var layer = getLayerByName(map, name);
 	if (layer === null) {
-		//error: layer not found
+		error(tr("error:layer_not_found"));
 		return;
 	}
 	/**
@@ -179,7 +179,7 @@ function changeDetection(method) {
 	var layer_1 = getLayerByName(map, name_1);
 	var layer_2 = getLayerByName(map, name_2);
 	if (layer_1 === null || layer_2 === null) {
-		//error: layers not found
+		error(tr("error:layer_not_found"));
 		return;
 	}
 	// process by chosen method
