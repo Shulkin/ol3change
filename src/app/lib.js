@@ -126,6 +126,71 @@ function ratio(src, dst) {
 	return pixel;
 }
 
+function next4Edges(edge) {
+	var x = edge[0], y = edge[1];
+	return [
+		[x + 1, y],
+		[x - 1, y],
+		[x, y + 1],
+		[x, y - 1]
+	];
+}
+
+/*
+function removeRegions(inputs, data) {
+	var image = inputs[0];
+	var seed = data.pixel;
+	var delta = parseInt(data.delta);
+	if (!seed) {
+		return image;
+	}
+	seed = seed.map(Math.round);
+	var width = image.width;
+	var height = image.height;
+	var inputData = image.data;
+	var outputData = new Uint8ClampedArray(inputData);
+	var seedIdx = (seed[1] * width + seed[0]) * 4;
+	var seedR = inputData[seedIdx];
+	var seedG = inputData[seedIdx + 1];
+	var seedB = inputData[seedIdx + 2];
+	var edge = [seed];
+	while (edge.length) {
+		var newedge = [];
+		for (var i = 0, ii = edge.length; i < ii; i++) {
+			// As noted in the Raster source constructor, this function is provided
+			// using the `lib` option. Other functions will NOT be visible unless
+			// provided using the `lib` option.
+			var next = next4Edges(edge[i]);
+			for (var j = 0, jj = next.length; j < jj; j++) {
+				var s = next[j][0], t = next[j][1];
+				if (s >= 0 && s < width && t >= 0 && t < height) {
+					var ci = (t * width + s) * 4;
+					var cr = inputData[ci];
+					var cg = inputData[ci + 1];
+					var cb = inputData[ci + 2];
+					var ca = inputData[ci + 3];
+					// if alpha is zero, carry on
+					if (ca === 0) {
+						continue;
+					}
+					if (Math.abs(seedR - cr) < delta && Math.abs(seedG - cg) < delta && Math.abs(seedB - cb) < delta) {
+						outputData[ci] = 255;
+						outputData[ci + 1] = 0;
+						outputData[ci + 2] = 0;
+						outputData[ci + 3] = 255;
+						newedge.push([s, t]);
+					}
+					// mark as visited
+					inputData[ci + 3] = 0;
+				}
+			}
+		}
+		edge = newedge;
+	}
+	return {data: outputData, width: width, height: height};
+}
+*/
+
 // array of process functions
 var functions = [composite, difference, ratio];
 
@@ -142,7 +207,7 @@ function addResult(source, title, name) {
 }
 
 function postProcessing(type) {
-	var matrix = kernels[type]; // choose filter type
+	// get layer
 	var name = get("layer_filter");
 	if (name === 'null') {
 		error(tr("error:invalid_layer"));
@@ -153,6 +218,21 @@ function postProcessing(type) {
 		error(tr("error:layer_not_found"));
 		return;
 	}
+	switch (type) {
+		case 'remove':
+			removeUnwantedRegions(layer);
+			break;
+		default:
+			kernelFilter(type, layer);
+			break;
+	}
+	map.render();
+}
+
+// simple kernel filter - sharpen, blur, etc.
+function kernelFilter(type, layer) {
+	// simple kernel filters, compute by ol3
+	var matrix = kernels[type]; // get kernel
 	/**
 	* Apply a filter on "postcompose" events.
 	*/
@@ -165,11 +245,36 @@ function postProcessing(type) {
 			convolve(event.context, matrix);
 		});
 	}
-	map.render();
+}
+
+// more complex filter, remove regions by size
+function removeUnwantedRegions(layer) {
+	alert("removeUnwantedRegions");
+	return;
+	var raster = new ol.source.Raster({
+		sources: [layer.getSource()],
+		operationType: 'image',
+		operation: removeRegions,
+		// Functions in the `lib` object will be available to the operation run in
+		// the web worker.
+		lib: {
+			next4Edges: next4Edges
+		}
+	});
+	// some mumbo-jumbo with title
+	var title = layer.get('title');
+	title_full = "Фильтр_Регион [" + title + "]";
+	var title_short = title_full; // initially the same
+	if (title_short.length > 20) {
+		title_short = title_short.substring(0, 20) + "..."; // cut
+	}
+	// add result image layer to map
+	addResult(raster, title_short, "filter_region_" + uid());
 }
 
 function changeDetection(method) {
 	var func = functions[method] // process function
+	// get layers
 	var name_1 = get("layer_change_1");
 	var name_2 = get("layer_change_2");
 	if (name_1 === 'null' || name_2 === 'null') {

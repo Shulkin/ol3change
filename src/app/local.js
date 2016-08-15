@@ -90,7 +90,8 @@ var messages = {
 				none: "None",
 				sharpen: "Sharpen",
 				gaussian: "Gaussian blur",
-				edge: "Edge detector"
+				edge: "Edge detector",
+				remove: "Remove small regions"
 			}
 		},
 		error: {
@@ -193,7 +194,8 @@ var messages = {
 				none: "Нет",
 				sharpen: "Увеличить резкость",
 				gaussian: "Размытие по Гауссу",
-				edge: "Детектор граней"
+				edge: "Детектор граней",
+				remove: "Удалить лишнее"
 			}
 		},
 		error: {

@@ -194,6 +194,7 @@ function f_div() {
 	list.append("<option value=sharpen>" + tr('filter:type:sharpen') + "</option>");
 	list.append("<option value=gaussian>" + tr('filter:type:gaussian') + "</option>");
 	list.append("<option value=edge>" + tr('filter:type:edge') + "</option>");
+	list.append("<option value=remove>" + tr('filter:type:remove') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
