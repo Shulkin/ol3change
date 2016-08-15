@@ -158,28 +158,6 @@ function initSatelliteMosaics() {
 	highlight.setZIndex(9999); // on top
 }
 
-/*
-function l_div(title, id) {
-	var div = $("<div>");
-	var p = $("<p></p>").text(title);
-	var list = $("<select id='" + id + "'>");
-	var count = 0;
-	for (var i = 0; i < mosaics.length; i++) {
-		// only add layers which is currently on map?
-		if (onMap(map, mosaics[i])) { // maybe inefficiently
-			count++;
-			list.append("<option value=" + i + ">" + mosaics[i].get("title") + "</option>");
-		}
-	}
-	if (!(count > 0)) { // no layers
-		list.append("<option value='" + null + "'>" + tr('change:no_layers') + "</option>");
-	}
-	list.append("</select>");
-	div.append(p, list, "</div>");
-	return div;
-}
-*/
-
 function l_div(title, id) {
 	var div = $("<div>");
 	var p = $("<p></p>").text(title);
@@ -210,14 +188,12 @@ function m_div() {
 
 function f_div() {
 	var div = $("<div>");
-	var p = $("<p></p>").text("Выберите фильтр");
+	var p = $("<p></p>").text(tr('filter:type:title'));
 	var list = $("<select id='filter_type'>");
-	list.append("<option value=none>" + "Нет" + "</option>");
-	list.append("<option value=sharpen>" + "Увеличить резкость" + "</option>");
-	list.append("<option value=sharpenless>" + "Уменьшить резкость" + "</option>");
-	list.append("<option value=blur>" + "Размытие" + "</option>");
-	list.append("<option value=gaussian>" + "Размытие по Гауссу" + "</option>");
-	list.append("<option value=edge>" + "Детектор граней" + "</option>");
+	list.append("<option value=none>" + tr('filter:type:none') + "</option>");
+	list.append("<option value=sharpen>" + tr('filter:type:sharpen') + "</option>");
+	list.append("<option value=gaussian>" + tr('filter:type:gaussian') + "</option>");
+	list.append("<option value=edge>" + tr('filter:type:edge') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
@@ -240,7 +216,7 @@ $('#filter').on('shown.bs.modal', function() {
 	var elem = $("#filter > div > div.modal-content > div.modal-body");
 	elem.html(""); // clear previous html
 	elem.append(
-		l_div("Выберите слой", "layer_filter"), // filtered layer
+		l_div(tr('filter:_layer'), "layer_filter"), // filtered layer
 		f_div() // filter type
 	);
 });
@@ -254,6 +230,7 @@ function trMenu() {
 	$("span#m_layers_add").text(tr('menu:_layers:add'));
 	$("span#m_service").text(tr('menu:service:title'));
 	$("span#m_service_change").text(tr('menu:service:change'));
+	$("span#m_service_filter").text(tr('menu:service:filter'));
 	$("span#m_export").text(tr('menu:_export:title'));
 	$("span#m_export_print").text(tr('menu:_export:print'));
 	$("span#m_info").text(tr('menu:info:title'));
@@ -271,6 +248,8 @@ function trMenu() {
 function trModal() {
 	$("span#md_change_title").text(tr('modal:change:title'));
 	$("span#md_change_confirm").text(tr('modal:change:_confirm'));
+	$("span#md_filter_title").text(tr('modal:filter:title'));
+	$("span#md_filter_apply").text(tr('modal:filter:apply'));
 	$("span#md_msg_close").text(tr('modal:msg:_close'));
 	$("span#md_layers_title").text(tr('modal:_layers:title'));
 	$("span#md_layers_load").text(tr('modal:_layers:load'));

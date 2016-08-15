@@ -85,7 +85,7 @@
 								data-target=".navbar-collapse.in">
 								<span data-toggle="modal" data-target="#filter">
 									<i class="fa fa-filter"></i>
-									&nbsp;&nbsp;Фильтрация
+									&nbsp;&nbsp;<span id="m_service_filter">
 								</span>
 							</a></li>
 						</ul>
@@ -205,14 +205,14 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Применить фильтр</h4>
+						<h4 class="modal-title"><span id="md_filter_title"></h4>
 					</div>
 					<div class="modal-body">
 					</div>
 					<div class="modal-footer">
 						<button type="button"
 							class="btn btn-default" data-dismiss="modal"
-							onclick="postProcessing(get('filter_type')); return false;">Запуск
+							onclick="postProcessing(get('filter_type')); return false;"><span id="md_filter_apply">
 						</button>
 					</div>
 				</div>

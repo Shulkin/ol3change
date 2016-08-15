@@ -13,7 +13,8 @@ var messages = {
 			},
 			service: {
 				title: "Service",
-				change: "Change detection"
+				change: "Change detection",
+				filter: "Filter"
 			},
 			_export: {
 				title: "Export",
@@ -42,7 +43,7 @@ var messages = {
 			},
 			filter: {
 				title: "Apply filter",
-				_confirm: "Apply"
+				apply: "Apply"
 			},
 			msg: {
 				_close: "Close"
@@ -82,6 +83,16 @@ var messages = {
 				ratio: "Image ratio"
 			}
 		},
+		filter: {
+			_layer: "Select layer",
+			type: {
+				title: "Select filter",
+				none: "None",
+				sharpen: "Sharpen",
+				gaussian: "Gaussian blur",
+				edge: "Edge detector"
+			}
+		},
 		error: {
 			title: "Error",
 			under_construction: "Under construction...",
@@ -104,7 +115,8 @@ var messages = {
 			},
 			service: {
 				title: "Сервисы",
-				change: "Найти изменения"
+				change: "Найти изменения",
+				filter: "Фильтрация"
 			},
 			_export: {
 				title: "Экспорт",
@@ -133,7 +145,7 @@ var messages = {
 			},
 			filter: {
 				title: "Применить фильтр",
-				_confirm: "Запуск"
+				apply: "Применить"
 			},
 			msg: {
 				_close: "Закрыть"
@@ -171,6 +183,16 @@ var messages = {
 				composite: "Мультивременной композит",
 				difference: "Попиксельная разность",
 				ratio: "Попиксельное соотношение"
+			}
+		},
+		filter: {
+			_layer: "Выберите слой",
+			type: {
+				title: "Выберите тип фильтра",
+				none: "Нет",
+				sharpen: "Увеличить резкость",
+				gaussian: "Размытие по Гауссу",
+				edge: "Детектор граней"
 			}
 		},
 		error: {
