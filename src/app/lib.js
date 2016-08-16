@@ -1,4 +1,4 @@
-// 3x3 kernels for filter
+// array of 3x3 kernels for filter
 var kernels = {
 	none: [
 		0, 0, 0,
@@ -22,6 +22,19 @@ var kernels = {
 	]
 };
 
+// array of process functions
+var functions = [composite, difference, ratio];
+
+function getChangeColor() {
+	// red is the color of change
+	return [255, 0, 0, 255];
+}
+
+function getTransparent() {
+	// simple transparent white
+	return [255, 255, 255, 0];
+}
+
 function normalize(kernel) {
 	var len = kernel.length;
 	var normal = new Array(len);
@@ -42,20 +55,18 @@ function normalize(kernel) {
 }
 
 /**
-* Apply a convolution kernel to canvas.  This works for any size kernel, but
+* Apply a convolution kernel to image.  This works for any size kernel, but
 * performance starts degrading above 3 x 3.
-* @param {CanvasRenderingContext2D} context Canvas 2d context.
+* @param {Image} image Input data.
 * @param {Array.<number>} kernel Kernel.
 */
-function convolve(context, kernel) {
-	var canvas = context.canvas;
-	var width = canvas.width;
-	var height = canvas.height;
+function convolve(image, kernel) {
+	var width = image.width;
+	var height = image.height;
 	var size = Math.sqrt(kernel.length);
 	var half = Math.floor(size / 2);
-	var inputData = context.getImageData(0, 0, width, height).data;
-	var output = context.createImageData(width, height);
-	var outputData = output.data;
+	var inputData = image.data;
+	var outputData = new Uint8ClampedArray(inputData);
 	for (var pixelY = 0; pixelY < height; ++pixelY) {
 		var pixelsAbove = pixelY * width;
 		for (var pixelX = 0; pixelX < width; ++pixelX) {
@@ -79,12 +90,40 @@ function convolve(context, kernel) {
 			outputData[outputIndex + 3] = kernel.normalized ? a : 255;
 		}
 	}
-	context.putImageData(output, 0, 0);
+	return {data: outputData, width: width, height: height};
+}
+
+// remove color from image OR remove all colors except one
+function remove(image, color, except) {
+	var width = image.width;
+	var height = image.height;
+	var inputData = image.data;
+	var outputData = new Uint8ClampedArray(inputData);
+	var i = 0;
+	while (i < inputData.length) {
+		var match = true;
+		for (var j = 0; j < 3; j++) { // compare first 3 colors [R, G, B]
+			if (inputData[i + j] != color[j]) {
+				match = false;
+				break;
+			}
+		}
+		// copy first 3 color components
+		for (j = 0; j < 3; j++) outputData[i + j] = inputData[i + j];
+		// decide alpha depending on colors match
+		if (except) {
+			outputData[i + 3] = match ? 255 : 0;
+		} else {
+			outputData[i + 3] = match ? 0 : 255;
+		}
+		i += 4;
+	}
+	return {data: outputData, width: width, height: height};
 }
 
 // multitemporal composite
 function composite(src, dst) {
-	var pixel = [0,0,0,0]; // result
+	var pixel = transparent(); // result
 	pixel[0] = (src[0] + src[1] + src[2]) / 3; // red
 	pixel[1] = (dst[0] + dst[1] + dst[2]) / 3; // green
 	pixel[2] = (dst[0] + dst[1] + dst[2]) / 3; // blue
@@ -94,106 +133,39 @@ function composite(src, dst) {
 
 // image difference
 function difference(src, dst) {
-	var pixel = [0,0,0,0]; // result
-	// image difference
+	var pixel = transparent(); // result
+	// calculate difference
 	var threshold = 100;
 	var mean_src = (src[0] + src[1] + src[2]) / 3;
 	var mean_dst = (dst[0] + dst[1] + dst[2]) / 3;
 	var delta = Math.abs(mean_dst - mean_src);
 	if (delta > threshold) {
-		pixel = [255,0,0,255]; // major change
+		pixel = changeColor(); // major change
 	} else {
-		pixel = [0,0,0,0]; // transparent
+		pixel = transparent(); // transparent
 	}
 	return pixel;
 }
 
 // image ratio
 function ratio(src, dst) {
-	var pixel = [0,0,0,0]; // result
-	// image ratio
-	var threshold = 0.7; // ?
+	var pixel = transparent(); // result
+	// calculate ratio
+	var threshold = 0.7;
 	var mean_src = (src[0] + src[1] + src[2]) / 3;
 	var mean_dst = (dst[0] + dst[1] + dst[2]) / 3;
-	if (mean_src === 0) mean_src += 1; // ?
-	if (mean_dst === 0) mean_dst += 1; // ?
+	if (mean_src === 0) mean_src += 1;
+	if (mean_dst === 0) mean_dst += 1;
 	var ratio = Math.min(mean_src, mean_dst) / Math.max(mean_src, mean_dst);
-	if (ratio > threshold) { // more than 0.5 ratio
-		pixel = [255,0,0,255]; // major change
+	if (ratio > threshold) {
+		pixel = changeColor(); // major change
 	} else {
-		pixel = [0,0,0,0]; // transparent
+		pixel = transparent(); // transparent
 	}
 	return pixel;
 }
 
-function next4Edges(edge) {
-	var x = edge[0], y = edge[1];
-	return [
-		[x + 1, y],
-		[x - 1, y],
-		[x, y + 1],
-		[x, y - 1]
-	];
-}
-
-/*
-function removeRegions(inputs, data) {
-	var image = inputs[0];
-	var seed = data.pixel;
-	var delta = parseInt(data.delta);
-	if (!seed) {
-		return image;
-	}
-	seed = seed.map(Math.round);
-	var width = image.width;
-	var height = image.height;
-	var inputData = image.data;
-	var outputData = new Uint8ClampedArray(inputData);
-	var seedIdx = (seed[1] * width + seed[0]) * 4;
-	var seedR = inputData[seedIdx];
-	var seedG = inputData[seedIdx + 1];
-	var seedB = inputData[seedIdx + 2];
-	var edge = [seed];
-	while (edge.length) {
-		var newedge = [];
-		for (var i = 0, ii = edge.length; i < ii; i++) {
-			// As noted in the Raster source constructor, this function is provided
-			// using the `lib` option. Other functions will NOT be visible unless
-			// provided using the `lib` option.
-			var next = next4Edges(edge[i]);
-			for (var j = 0, jj = next.length; j < jj; j++) {
-				var s = next[j][0], t = next[j][1];
-				if (s >= 0 && s < width && t >= 0 && t < height) {
-					var ci = (t * width + s) * 4;
-					var cr = inputData[ci];
-					var cg = inputData[ci + 1];
-					var cb = inputData[ci + 2];
-					var ca = inputData[ci + 3];
-					// if alpha is zero, carry on
-					if (ca === 0) {
-						continue;
-					}
-					if (Math.abs(seedR - cr) < delta && Math.abs(seedG - cg) < delta && Math.abs(seedB - cb) < delta) {
-						outputData[ci] = 255;
-						outputData[ci + 1] = 0;
-						outputData[ci + 2] = 0;
-						outputData[ci + 3] = 255;
-						newedge.push([s, t]);
-					}
-					// mark as visited
-					inputData[ci + 3] = 0;
-				}
-			}
-		}
-		edge = newedge;
-	}
-	return {data: outputData, width: width, height: height};
-}
-*/
-
-// array of process functions
-var functions = [composite, difference, ratio];
-
+// add layer on map
 function addResult(source, title, name) {
 	var img = new ol.layer.Image({
 		title: title,
@@ -206,7 +178,8 @@ function addResult(source, title, name) {
 	refreshLayersList(map);
 }
 
-function postProcessing(type) {
+// any kernel filters, including complex ones
+function kernelFilter(type) {
 	// get layer
 	var name = get("layer_filter");
 	if (name === 'null') {
@@ -218,62 +191,58 @@ function postProcessing(type) {
 		error(tr("error:layer_not_found"));
 		return;
 	}
-	switch (type) {
-		case 'remove':
-			removeUnwantedRegions(layer);
-			break;
-		default:
-			kernelFilter(type, layer);
-			break;
-	}
-	map.render();
-}
-
-// simple kernel filter - sharpen, blur, etc.
-function kernelFilter(type, layer) {
-	// simple kernel filters, compute by ol3
-	var matrix = kernels[type]; // get kernel
-	/**
-	* Apply a filter on "postcompose" events.
-	*/
-	if (layer.listener != undefined && layer.listener != null) {
-		// remove previous filter, so they don't stack up
-		layer.unByKey(layer.listener);
-	}
-	if (type != 'none') { // no extra load on the CPU for empty kernel
-		layer.listener = layer.on('postcompose', function(event) {
-			convolve(event.context, matrix);
-		});
-	}
-}
-
-// more complex filter, remove regions by size
-function removeUnwantedRegions(layer) {
-	alert("removeUnwantedRegions");
-	return;
 	var raster = new ol.source.Raster({
 		sources: [layer.getSource()],
 		operationType: 'image',
-		operation: removeRegions,
-		// Functions in the `lib` object will be available to the operation run in
-		// the web worker.
-		lib: {
-			next4Edges: next4Edges
+		operation: function(pixels, data) {
+			if (data.type === 'remove') {
+				// apply gaussian blur
+				var img1 = convolve(pixels[0], data.matrix);
+				// remove all colors expect red as change color
+				return remove(img1, [255, 0, 0, 255], true);
+			} else if (data.type === 'edge') {
+				// apply edge detector
+				var img1 = convolve(pixels[0], data.matrix);
+				// remove black color, leave only edges
+				return remove(img1, [0, 0, 0, 255], false);
+			} else {
+				// just apply kernel
+				return convolve(pixels[0], data.matrix);
+			}
+			return process(pixels[0], data.matrix);
+		},
+		lib: {convolve: convolve, remove: remove}
+	});
+	raster.on('beforeoperations', function(event) {
+		// the event.data object will be passed to operations
+		var data = event.data;
+		data.type = type;
+		if (type === 'remove') {
+			// for now, only one exception...
+			data.matrix = normalize(kernels.gaussian);
+		} else {
+			data.matrix = normalize(kernels[type]); // get kernel
 		}
+	});
+	raster.on('afteroperations', function(event) {
+		// maybe unnecessary, just in case...
+		map.render();
 	});
 	// some mumbo-jumbo with title
 	var title = layer.get('title');
-	title_full = "Фильтр_Регион [" + title + "]";
+	title_full = "Фильтр_Матрица [" + title + "]";
 	var title_short = title_full; // initially the same
 	if (title_short.length > 20) {
 		title_short = title_short.substring(0, 20) + "..."; // cut
 	}
 	// add result image layer to map
-	addResult(raster, title_short, "filter_region_" + uid());
+	addResult(raster, title_short, "filter_" + uid());
+	map.render();
 }
 
+// process change detection methods
 function changeDetection(method) {
-	var func = functions[method] // process function
+	var process = functions[method] // change detection function
 	// get layers
 	var name_1 = get("layer_change_1");
 	var name_2 = get("layer_change_2");
@@ -299,7 +268,11 @@ function changeDetection(method) {
 		operation: function(pixels, data) {
 			return process(pixels[0], pixels[1]);
 		},
-		lib: {process: func}
+		lib: {
+			process: process,
+			changeColor: getChangeColor,
+			transparent: getTransparent
+		}
 	});
 	// some mumbo-jumbo with titles
 	var title_1 = layer_1.get('title');

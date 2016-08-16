@@ -205,7 +205,7 @@ $('#confirm').on('shown.bs.modal', function() {
 	var elem = $("#confirm > div > div.modal-content > div.modal-body");
 	elem.html(""); // clear previous html
 	elem.append(
-		// layers
+		// detect changes between these layers
 		l_div(tr('change:_layer:first'), "layer_change_1"),
 		l_div(tr('change:_layer:second'), "layer_change_2"),
 		m_div() // method
@@ -217,7 +217,8 @@ $('#filter').on('shown.bs.modal', function() {
 	var elem = $("#filter > div > div.modal-content > div.modal-body");
 	elem.html(""); // clear previous html
 	elem.append(
-		l_div(tr('filter:_layer'), "layer_filter"), // filtered layer
+		// filtered layer
+		l_div(tr('filter:_layer'), "layer_filter"),
 		f_div() // filter type
 	);
 });
