@@ -87,11 +87,10 @@ var messages = {
 			_layer: "Select layer",
 			type: {
 				title: "Select filter",
-				none: "None",
 				sharpen: "Sharpen",
 				gaussian: "Gaussian blur",
 				edge: "Edge detector",
-				remove: "Remove small regions"
+				special: "Special filter"
 			}
 		},
 		error: {
@@ -191,11 +190,10 @@ var messages = {
 			_layer: "Выберите слой",
 			type: {
 				title: "Выберите тип фильтра",
-				none: "Нет",
 				sharpen: "Увеличить резкость",
 				gaussian: "Размытие по Гауссу",
 				edge: "Детектор граней",
-				remove: "Удалить лишнее"
+				special: "Специальный фильтр"
 			}
 		},
 		error: {

@@ -1,10 +1,5 @@
-// array of 3x3 and 5x5 kernels for filters
+// array of kernels for filters
 var kernels = {
-	none: [
-		0, 0, 0,
-		0, 1, 0,
-		0, 0, 0
-	],
 	sharpen: [
 		0, -1, 0,
 		-1, 5, -1,
@@ -197,25 +192,29 @@ function kernelFilter(type) {
 		sources: [layer.getSource()],
 		operationType: 'image',
 		operation: function(pixels, data) {
-			if (data.type === 'remove') {
-				// apply gaussian blur
-				var img1 = convolve(pixels[0], normalize(data.matrices.gaussian));
-				// sharpen the image
-				var img2 = convolve(img1, normalize(data.matrices.sharpen));
-				// remove all colors EXCEPT red as change color
-				// 70 - delta, leave some other colors
-				return remove(img2, [255, 0, 0, 255], true, 70);
-			} else if (data.type === 'edge') {
-				// apply edge detector
-				var img1 = convolve(pixels[0], data.matrix);
-				// remove black color, leave ONLY edges
-				// 0 - remove ANY black
-				return remove(img1, [0, 0, 0, 255], false, 0);
-			} else {
-				// just apply kernel
-				return convolve(pixels[0], data.matrix);
+			switch (data.type) {
+				case 'special':
+					// special filter for change detection results
+					// apply gaussian blur
+					var img1 = convolve(pixels[0], normalize(data.matrices.gaussian));
+					// sharpen the image
+					var img2 = convolve(img1, normalize(data.matrices.sharpen));
+					// remove all colors EXCEPT red as change color
+					// delta=70 - leave some other colors, except red
+					return remove(img2, [255, 0, 0, 255], true, 70);
+					break;
+				case 'edge':
+					// apply edge detector
+					var img1 = convolve(pixels[0], normalize(data.matrix));
+					// remove black color, leaving ONLY edges
+					// delta=0 - remove ANY black color
+					return remove(img1, [0, 0, 0, 255], false, 0);
+					break;
+				default:
+					// just apply kernel
+					return convolve(pixels[0], normalize(data.matrix));
+					break;
 			}
-			return process(pixels[0], data.matrix);
 		},
 		lib: {
 			normalize: normalize,
@@ -227,11 +226,11 @@ function kernelFilter(type) {
 		// the event.data object will be passed to operations
 		var data = event.data;
 		data.type = type;
-		if (type === 'remove') {
+		if (type === 'special') {
 			// for now, only one exception...
 			data.matrices = kernels;
 		} else {
-			data.matrix = normalize(kernels[type]); // get kernel
+			data.matrix = kernels[type]; // get kernel
 		}
 	});
 	raster.on('afteroperations', function(event) {

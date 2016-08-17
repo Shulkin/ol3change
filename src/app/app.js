@@ -187,14 +187,16 @@ function m_div() {
 }
 
 function f_div() {
+	var special_tooltip = "Специальный фильтр. Только для результатов определения изменений. " +
+		"Делает размытие по Гауссу, затем увеличивает резкость и убирает все пиксели кроме ярко-красных. " +
+		"Таким образом фильтрует шум.";
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('filter:type:title'));
 	var list = $("<select id='filter_type'>");
-	list.append("<option value=none>" + tr('filter:type:none') + "</option>");
 	list.append("<option value=sharpen>" + tr('filter:type:sharpen') + "</option>");
 	list.append("<option value=gaussian>" + tr('filter:type:gaussian') + "</option>");
 	list.append("<option value=edge>" + tr('filter:type:edge') + "</option>");
-	list.append("<option value=remove>" + tr('filter:type:remove') + "</option>");
+	list.append("<option value=special title='" + special_tooltip + "'>" + tr('filter:type:special') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
