@@ -1,4 +1,4 @@
-// array of 3x3 kernels for filter
+// array of 3x3 and 5x5 kernels for filters
 var kernels = {
 	none: [
 		0, 0, 0,
@@ -11,9 +11,11 @@ var kernels = {
 		0, -1, 0
 	],
 	gaussian: [
-		1/16, 1/8, 1/16,
-		1/8, 1/4, 1/8,
-		1/16, 1/8, 1/16
+		1, 4, 7, 4, 1,
+		4, 16, 26, 16, 4,
+		7, 26, 41, 26, 7,
+		4, 16, 26, 16, 4,
+		1, 4, 7, 4, 1
 	],
 	edge: [
 		0, 1, 0,
@@ -94,7 +96,7 @@ function convolve(image, kernel) {
 }
 
 // remove color from image OR remove all colors except one
-function remove(image, color, except) {
+function remove(image, color, except, delta) {
 	var width = image.width;
 	var height = image.height;
 	var inputData = image.data;
@@ -103,7 +105,7 @@ function remove(image, color, except) {
 	while (i < inputData.length) {
 		var match = true;
 		for (var j = 0; j < 3; j++) { // compare first 3 colors [R, G, B]
-			if (inputData[i + j] != color[j]) {
+			if (Math.abs(inputData[i + j] - color[j]) > delta) {
 				match = false;
 				break;
 			}
@@ -197,21 +199,29 @@ function kernelFilter(type) {
 		operation: function(pixels, data) {
 			if (data.type === 'remove') {
 				// apply gaussian blur
-				var img1 = convolve(pixels[0], data.matrix);
-				// remove all colors expect red as change color
-				return remove(img1, [255, 0, 0, 255], true);
+				var img1 = convolve(pixels[0], normalize(data.matrices.gaussian));
+				// sharpen the image
+				var img2 = convolve(img1, normalize(data.matrices.sharpen));
+				// remove all colors EXCEPT red as change color
+				// 70 - delta, leave some other colors
+				return remove(img2, [255, 0, 0, 255], true, 70);
 			} else if (data.type === 'edge') {
 				// apply edge detector
 				var img1 = convolve(pixels[0], data.matrix);
-				// remove black color, leave only edges
-				return remove(img1, [0, 0, 0, 255], false);
+				// remove black color, leave ONLY edges
+				// 0 - remove ANY black
+				return remove(img1, [0, 0, 0, 255], false, 0);
 			} else {
 				// just apply kernel
 				return convolve(pixels[0], data.matrix);
 			}
 			return process(pixels[0], data.matrix);
 		},
-		lib: {convolve: convolve, remove: remove}
+		lib: {
+			normalize: normalize,
+			convolve: convolve,
+			remove: remove
+		}
 	});
 	raster.on('beforeoperations', function(event) {
 		// the event.data object will be passed to operations
@@ -219,7 +229,7 @@ function kernelFilter(type) {
 		data.type = type;
 		if (type === 'remove') {
 			// for now, only one exception...
-			data.matrix = normalize(kernels.gaussian);
+			data.matrices = kernels;
 		} else {
 			data.matrix = normalize(kernels[type]); // get kernel
 		}
