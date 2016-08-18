@@ -179,8 +179,51 @@ function classify(image) {
 	var height = image.height;
 	var inputData = image.data;
 	var outputData = new Uint8ClampedArray(inputData.length);
+	// SECOND SOLUTION
+	// create marked array
 	var marked = new Array(outputData.length);
-	// clear output data array
+	for (var k = 0; k < marked.length; k++) {
+		marked[k] = false;
+	}
+	var m_class = 0;
+	for (var x = 0; x < width; x++) {
+		for (var y = 0; y < height; y++) {
+			var id = (y * width + x) * 4;
+			if (!marked[id]) { // this output position is not marked
+				var r = inputData[id];
+				var g = inputData[id + 1];
+				var b = inputData[id + 2];
+				// holy shit! O(n^4)
+				for (var i = 0; i < width; i++) {
+					for (var j = 0; j < height; j++) {
+						var cid = (j * width + i) * 4;
+						cr = inputData[cid];
+						cg = inputData[cid + 1];
+						cb = inputData[cid + 2];
+						if (Math.abs(r - cr) < threshold &&
+							Math.abs(g - cg) < threshold &&
+							Math.abs(b - cb) < threshold) {
+							//--
+							outputData[cid] = m_class;
+							outputData[cid + 1] = m_class;
+							outputData[cid + 2] = m_class;
+							outputData[cid + 3] = 255;
+							//--
+							marked[cid] = true;
+							marked[cid + 1] = true;
+							marked[cid + 2] = true;
+							marked[cid + 3] = true;
+						}
+					}
+				}
+				m_class++;
+			}
+		}
+	}
+	/*
+	// FIRST WORKING SOLUTION!
+	// create marked array
+	var marked = new Array(outputData.length);
 	for (var k = 0; k < marked.length; k++) {
 		marked[k] = false;
 	}
@@ -243,12 +286,12 @@ function classify(image) {
 			}
 		}
 	}
+	*/
 	return {data: outputData, width: width, height: height};
 }
 
 // compare 2 classified images pixel-by-pixel
 function compare(src, dst) {
-	var threshold = 0;
 	var width = src.width;
 	var height = src.height;
 	var srcData = src.data;
@@ -257,10 +300,15 @@ function compare(src, dst) {
 	var i = 0;
 	while (i < srcData.length) {
 		var pixel = transparent(); // empty result
-		var mean_src = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3;
-		var mean_dst = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3;
-		var delta = Math.abs(mean_dst - mean_src);
-		if (delta > threshold) {
+		var match = true;
+		for (var j = 0; j < 3; j++) { // compare first 3 colors [R, G, B]
+			//if (srcData[i + j] != dstData[i + j]) {
+			if (Math.abs(srcData[i + j] - dstData[i + j]) > 30) {
+				match = false;
+				break;
+			}
+		}
+		if (!match) {
 			pixel = changeColor(); // major change
 		}
 		outputData[i] = pixel[0]; // red
@@ -437,7 +485,7 @@ function changeDetection_classification() {
 			// classified image 1
 			var img1 = classify(inputs[0]);
 			// classified image 2
-			var img2 = classify(inputs[0]);
+			var img2 = classify(inputs[1]);
 			// compare result
 			return compare(img1, img2);
 		},
