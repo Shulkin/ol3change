@@ -181,6 +181,7 @@ function m_div() {
 	list.append("<option value=0>" + tr('change:method:composite') + "</option>");
 	list.append("<option value=1>" + tr('change:method:difference') + "</option>");
 	list.append("<option value=2>" + tr('change:method:ratio') + "</option>");
+	list.append("<option value=classification>" + tr('change:method:classification') + "</option>"); // HACK
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;

@@ -80,7 +80,8 @@ var messages = {
 				title: "Change detection method",
 				composite: "Multitemporal composite",
 				difference: "Image difference",
-				ratio: "Image ratio"
+				ratio: "Image ratio",
+				classification: "Unsupervised classification"
 			}
 		},
 		filter: {
@@ -183,7 +184,8 @@ var messages = {
 				title: "Метод определения изменений",
 				composite: "Мультивременной композит",
 				difference: "Попиксельная разность",
-				ratio: "Попиксельное соотношение"
+				ratio: "Попиксельное соотношение",
+				classification: "Метод с классификацией"
 			}
 		},
 		filter: {
