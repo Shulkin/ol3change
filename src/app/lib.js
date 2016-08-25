@@ -34,12 +34,22 @@ var kernels = {
 * @param {Object} data Additional parameters.
 */
 function multitemporal_composite(src, dst) {
-	var pixel = empty(); // result
-	pixel[0] = (src[0] + src[1] + src[2]) / 3; // red
-	pixel[1] = (dst[0] + dst[1] + dst[2]) / 3; // green
-	pixel[2] = (dst[0] + dst[1] + dst[2]) / 3; // blue
-	pixel[3] = 255; // aplha
-	return pixel;
+	var width = src.width;
+	var height = src.height;
+	var srcData = src.data;
+	var dstData = dst.data;
+	var outputData = new Uint8ClampedArray(srcData.length);
+	var i = 0;
+	while (i < srcData.length) {
+		var pixel = []; // result
+		pixel[0] = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3; // red
+		pixel[1] = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3; // green
+		pixel[2] = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3; // blue
+		pixel[3] = 255; // aplha
+		for (var j = 0; j < 4; j++) outputData[i + j] = pixel[j];
+		i += 4;
+	}
+	return {data: outputData, width: width, height: height};
 }
 
 /**
@@ -47,34 +57,52 @@ function multitemporal_composite(src, dst) {
 * Set change depending on threshold value from data.
 * @param {Image} src Input image 1.
 * @param {Image} dst Input image 2.
-* @param {Object} data Additional parameters.
+* @param {Object} threshold Additional parameter.
 */
-function image_difference(src, dst, data) {
-	var pixel = empty(); // result
-	// calculate difference
-	var mean_src = (src[0] + src[1] + src[2]) / 3;
-	var mean_dst = (dst[0] + dst[1] + dst[2]) / 3;
-	var delta = Math.abs(mean_dst - mean_src);
-	pixel = delta > data.threshold ? change() : empty();
-	return pixel;
+function image_difference(src, dst, threshold) {
+	var width = src.width;
+	var height = src.height;
+	var srcData = src.data;
+	var dstData = dst.data;
+	var outputData = new Uint8ClampedArray(srcData.length);
+	var i = 0;
+	while (i < srcData.length) {
+		// calculate difference
+		var mean_src = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3;
+		var mean_dst = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3;
+		var delta = Math.abs(mean_dst - mean_src);
+		var pixel = delta > threshold ? change() : empty(); // result
+		for (var j = 0; j < 4; j++) outputData[i + j] = pixel[j];
+		i += 4;
+	}
+	return {data: outputData, width: width, height: height};
 }
 
 /**
 * Calculates the ratio between pixels. Change is determined by threshold.
 * @param {Image} src Input image 1.
 * @param {Image} dst Input image 2.
-* @param {Object} data Additional parameters.
+* @param {Object} threshold Additional parameter.
 */
-function image_ratio(src, dst, data) {
-	var pixel = empty(); // result
-	// calculate ratio
-	var mean_src = (src[0] + src[1] + src[2]) / 3;
-	var mean_dst = (dst[0] + dst[1] + dst[2]) / 3;
-	if (mean_src === 0) mean_src += 1;
-	if (mean_dst === 0) mean_dst += 1;
-	var ratio = Math.min(mean_src, mean_dst) / Math.max(mean_src, mean_dst);
-	pixel = ratio > data.threshold ? change() : empty();
-	return pixel;
+function image_ratio(src, dst, threshold) {
+	var width = src.width;
+	var height = src.height;
+	var srcData = src.data;
+	var dstData = dst.data;
+	var outputData = new Uint8ClampedArray(srcData.length);
+	var i = 0;
+	while (i < srcData.length) {
+		// calculate ratio
+		var mean_src = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3;
+		var mean_dst = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3;
+		if (mean_src === 0) mean_src += 1;
+		if (mean_dst === 0) mean_dst += 1;
+		var ratio = Math.min(mean_src, mean_dst) / Math.max(mean_src, mean_dst);
+		var pixel = ratio > threshold ? change() : empty(); // result
+		for (var j = 0; j < 4; j++) outputData[i + j] = pixel[j];
+		i += 4;
+	}
+	return {data: outputData, width: width, height: height};
 }
 
 /**

@@ -4,7 +4,7 @@
 */
 function changeDetection(method) {
 	var process = functions[method] // change detection function
-	// src and dst images
+	// both images to compare and detect changes
 	var name_1 = get("layer_change_1");
 	var name_2 = get("layer_change_2");
 	if (name_1 === 'null' || name_2 === 'null') {
@@ -19,6 +19,7 @@ function changeDetection(method) {
 	}
 	var raster = new ol.source.Raster({
 		sources: [layer_1.getSource(), layer_2.getSource()],
+		operationType: 'image', // on whole image
 		/**
 		 * Run calculations on pixel data.
 		 * @param {Array} pixels List of pixels (one per source).
@@ -26,7 +27,15 @@ function changeDetection(method) {
 		 * @return {Array} The output pixel.
 		 */
 		operation: function(pixels, data) {
-			return process(pixels[0], pixels[1], data);
+			switch (data.method) {
+				case 'composite':
+					// don't need threshold in composite
+					return process(pixels[0], pixels[1]);
+					break;
+				default:
+					return process(pixels[0], pixels[1], data.threshold);
+					break;
+			}
 		},
 		lib: {
 			process: process, // change detection function
@@ -38,6 +47,7 @@ function changeDetection(method) {
 	raster.on('beforeoperations', function(event) {
 		// the event.data object will be passed to operations
 		var data = event.data;
+		data.method = method;
 		// set any parameters in data, like threshold for image difference
 		switch (method) { // depending on processing method
 			case 'difference':
@@ -73,27 +83,27 @@ function kernelFilter(type) {
 		sources: [layer.getSource()],
 		operationType: 'image',
 		operation: function(pixels, data) {
+			var source = pixels[0];
 			switch (data.type) {
 				case 'edge':
 					// apply edge detector
-					var img1 = convolve(pixels[0], data.matrix);
+					var edges = convolve(source, data.matrix);
 					// remove black color, leaving ONLY edges
-					return remove(img1, [0, 0, 0, 255]);
+					return removePixels(edges, [0, 0, 0, 255]);
 					break;
 				case 'median':
-					var img1 = pixels[0];
-					var img2 = new MedianFilter().convertImage(img1, img1.width, img1.height);
-					return remove(img2, [0, 0, 0, 255]);
+					var median = new MedianFilter().convertImage(source, source.width, source.height);
+					return removePixels(median, [0, 0, 0, 255]);
 					break;
 				default:
 					// just apply kernel
-					return convolve(pixels[0], data.matrix);
+					return convolve(source, data.matrix);
 					break;
 			}
 		},
 		lib: {
 			convolve: convolve,
-			remove: remove,
+			removePixels: remove,
 			MedianFilter: MedianFilter,
 			MedianHistogram: MedianHistogram,
 			MedianHistogramFast: MedianHistogramFast
@@ -107,12 +117,6 @@ function kernelFilter(type) {
 			data.matrix = normalize(kernels[type]); // get kernel
 		}
 	});
-	/*
-	raster.on('afteroperations', function(event) {
-		// maybe unnecessary, just in case...
-		map.render();
-	});
-	*/
 	var title = getShortTitle("Фильтр", [layer.get('title')]);
 	addResult(raster, title, "filter_" + uid());
 	map.render();
