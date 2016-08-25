@@ -80,8 +80,7 @@ var messages = {
 				title: "Change detection method",
 				composite: "Multitemporal composite",
 				difference: "Image difference",
-				ratio: "Image ratio",
-				classification: "Unsupervised classification"
+				ratio: "Image ratio"
 			}
 		},
 		filter: {
@@ -91,7 +90,7 @@ var messages = {
 				sharpen: "Sharpen",
 				gaussian: "Gaussian blur",
 				edge: "Edge detector",
-				special: "Special filter"
+				median: "Median filter"
 			}
 		},
 		error: {
@@ -184,8 +183,7 @@ var messages = {
 				title: "Метод определения изменений",
 				composite: "Мультивременной композит",
 				difference: "Попиксельная разность",
-				ratio: "Попиксельное соотношение",
-				classification: "Метод с классификацией"
+				ratio: "Попиксельное соотношение"
 			}
 		},
 		filter: {
@@ -195,7 +193,7 @@ var messages = {
 				sharpen: "Увеличить резкость",
 				gaussian: "Размытие по Гауссу",
 				edge: "Детектор граней",
-				special: "Специальный фильтр"
+				median: "Медианный фильтр"
 			}
 		},
 		error: {

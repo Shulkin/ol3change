@@ -102,3 +102,39 @@ function uid () {
 	} while (idStr.length < idStrLen);
 	return (idStr);
 }
+
+// add layer on map
+function addResult(source, title, name) {
+	var img = new ol.layer.Image({
+		title: title,
+		name: name,
+		group: "imagery",
+		deletable: true,
+		source: source
+	});
+	map.addLayer(img);
+	refreshLayersList(map);
+}
+
+function empty() {
+	// simple transparent white
+	return [255, 255, 255, 0];
+}
+
+function change() {
+	// red is the color of change
+	return [255, 0, 0, 255];
+}
+
+function getShortTitle(header, array) {
+	var params = "";
+	for (var i = 0; i < array.length; i++) {
+		params += array[i] + ", ";
+		if (i < array.length - 1) params += ", ";
+	}
+	var full = header + " [" + params + "]";
+	if (full.length > 20) {
+		full = full.substring(0, 20) + "..."; // cut
+	}
+	return full;
+}

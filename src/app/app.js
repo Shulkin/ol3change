@@ -8,7 +8,9 @@
  * @require local.js
  * @require modal.js
  * @require utils.js
+ * @require median.js
  * @require lib.js
+ * @require processing.js
  */
 
 // ==== config ====
@@ -178,26 +180,22 @@ function m_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('change:method:title'));
 	var list = $("<select id='method'>");
-	list.append("<option value=0>" + tr('change:method:composite') + "</option>");
-	list.append("<option value=1>" + tr('change:method:difference') + "</option>");
-	list.append("<option value=2>" + tr('change:method:ratio') + "</option>");
-	list.append("<option value=classification>" + tr('change:method:classification') + "</option>"); // HACK
+	list.append("<option value=composite>" + tr('change:method:composite') + "</option>");
+	list.append("<option value=difference>" + tr('change:method:difference') + "</option>");
+	list.append("<option value=ratio>" + tr('change:method:ratio') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
 }
 
 function f_div() {
-	var special_tooltip = "Специальный фильтр. Только для результатов определения изменений. " +
-		"Делает размытие по Гауссу, затем увеличивает резкость и убирает все пиксели кроме ярко-красных. " +
-		"Таким образом фильтрует шум.";
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('filter:type:title'));
 	var list = $("<select id='filter_type'>");
 	list.append("<option value=sharpen>" + tr('filter:type:sharpen') + "</option>");
 	list.append("<option value=gaussian>" + tr('filter:type:gaussian') + "</option>");
 	list.append("<option value=edge>" + tr('filter:type:edge') + "</option>");
-	list.append("<option value=special title='" + special_tooltip + "'>" + tr('filter:type:special') + "</option>");
+	list.append("<option value=median>" + tr('filter:type:median') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
