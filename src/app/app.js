@@ -188,6 +188,16 @@ function m_div() {
 	return div;
 }
 
+function e_div() {
+	var div = $("<div>");
+	var p = $("<p></p>").text(tr('express:method:title'));
+	var list = $("<select id='express_method'>");
+	list.append("<option value=urban>" + tr('express:method:urban') + "</option>");
+	list.append("</select>");
+	div.append(p, list, "</div>");
+	return div;
+}
+
 function f_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('filter:type:title'));
@@ -213,6 +223,18 @@ $('#confirm').on('shown.bs.modal', function() {
 	);
 });
 
+// handler on show express analysis window
+$('#express').on('shown.bs.modal', function() {
+	var elem = $("#express > div > div.modal-content > div.modal-body");
+	elem.html(""); // clear previous html
+	elem.append(
+		// analyse these data layers
+		l_div(tr('change:_layer:first'), "layer_express_1"),
+		l_div(tr('change:_layer:second'), "layer_express_2"),
+		e_div() // express method
+	);
+});
+
 // handler on show post processing window
 $('#filter').on('shown.bs.modal', function() {
 	var elem = $("#filter > div > div.modal-content > div.modal-body");
@@ -232,6 +254,7 @@ function trMenu() {
 	$("span#m_layers").text(tr('menu:_layers:title'));
 	$("span#m_layers_add").text(tr('menu:_layers:add'));
 	$("span#m_service").text(tr('menu:service:title'));
+	$("span#m_service_express").text(tr('menu:service:express'));
 	$("span#m_service_change").text(tr('menu:service:change'));
 	$("span#m_service_filter").text(tr('menu:service:filter'));
 	$("span#m_export").text(tr('menu:_export:title'));
@@ -249,6 +272,8 @@ function trMenu() {
 
 // translate modal windows
 function trModal() {
+	$("span#md_express_title").text(tr('modal:express:title'));
+	$("span#md_express_confirm").text(tr('modal:express:_confirm'));
 	$("span#md_change_title").text(tr('modal:change:title'));
 	$("span#md_change_confirm").text(tr('modal:change:_confirm'));
 	$("span#md_filter_title").text(tr('modal:filter:title'));

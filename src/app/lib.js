@@ -192,3 +192,25 @@ function remove(image, color) {
 	}
 	return {data: outputData, width: width, height: height};
 }
+
+/**
+* Join 2 images together.
+* @param {Image} image Input data.
+*/
+function overlap(src ,dst) {
+	var width = src.width;
+	var height = src.height;
+	var srcData = src.data;
+	var dstData = dst.data;
+	var outputData = new Uint8ClampedArray(srcData.length);
+	var i = 0;
+	while (i < srcData.length) {
+		for (var j = 0; j < 4; j++) outputData[i + j] = srcData[i + j]; // init as srsData
+		// overlap from dstData if corresponding alpha is not transparent
+		if (dstData[i + 3] != 0) {
+			for (j = 0; j < 4; j++) outputData[i + j] = dstData[i + j];
+		}
+		i += 4;
+	}
+	return {data: outputData, width: width, height: height};
+}

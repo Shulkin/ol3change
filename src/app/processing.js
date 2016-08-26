@@ -64,6 +64,66 @@ function changeDetection(method) {
 }
 
 /**
+* Run quick analysis.
+* @param {String} method Type of procedure
+*/
+function expressAnalysis(method) {
+	// data for analysis
+	var name_1 = get("layer_express_1");
+	var name_2 = get("layer_express_2");
+	if (name_1 === 'null' || name_2 === 'null') {
+		error(tr("error:invalid_layer"));
+		return;
+	}
+	var layer_1 = getLayerByName(map, name_1);
+	var layer_2 = getLayerByName(map, name_2);
+	if (layer_1 === null || layer_2 === null) {
+		error(tr("error:layer_not_found"));
+		return;
+	}
+	var raster = new ol.source.Raster({
+		sources: [layer_1.getSource(), layer_2.getSource()],
+		operationType: 'image', // on whole image
+		operation: function(pixels, data) {
+			switch (data.method) {
+				case 'urban':
+					// complex chain of procedures
+					var img1 = difference(pixels[0], pixels[1], 100); // difference
+					var median1 = new MedianFilter().convertImage(img1, img1.width, img1.height);
+					median1 = removePixels(median1, [255, 255, 255, 255]); // remove white
+					var img2 = ratio(pixels[0], pixels[1], 0.7); // ratio
+					var median2 = new MedianFilter().convertImage(img2, img2.width, img2.height);
+					median2 = removePixels(median2, [255, 255, 255, 255]); // remove white
+					return overlapPixels(median1, median2);
+					break;
+				default:
+					return pixels[0]; // unnecessary
+					break;
+			}
+		},
+		lib: {
+			// any procedures needed for complete analysis
+			empty: empty,
+			change: change,
+			ratio: image_ratio,
+			removePixels: remove,
+			overlapPixels: overlap,
+			MedianFilter: MedianFilter,
+			difference: image_difference,
+			MedianHistogram: MedianHistogram,
+			MedianHistogramFast: MedianHistogramFast
+		}
+	});
+	raster.on('beforeoperations', function(event) {
+		var data = event.data;
+		data.method = method;
+	});
+	var title = getShortTitle("Анализ", [layer_1.get('title'), layer_2.get('title')]);
+	addResult(raster, title, "express" + uid());
+	map.render();
+}
+
+/**
 * Apply kernel filter.
 * @param {String} type Filter's type.
 */

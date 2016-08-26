@@ -13,6 +13,7 @@ var messages = {
 			},
 			service: {
 				title: "Service",
+				express: "Quick analysis",
 				change: "Change detection",
 				filter: "Filter"
 			},
@@ -39,6 +40,10 @@ var messages = {
 		modal: {
 			change: {
 				title: "Change detection",
+				_confirm: "Start"
+			},
+			express: {
+				title: "Express analysis",
 				_confirm: "Start"
 			},
 			filter: {
@@ -83,6 +88,12 @@ var messages = {
 				ratio: "Image ratio"
 			}
 		},
+		express: {
+			method: {
+				title: "Analysis method",
+				urban: "Detect changes in urban area"
+			}
+		},
 		filter: {
 			_layer: "Select layer",
 			type: {
@@ -116,6 +127,7 @@ var messages = {
 			},
 			service: {
 				title: "Сервисы",
+				express: "Экспресс-анализ",
 				change: "Найти изменения",
 				filter: "Фильтрация"
 			},
@@ -142,6 +154,10 @@ var messages = {
 		modal: {
 			change: {
 				title: "Найти изменения",
+				_confirm: "Запуск"
+			},
+			express: {
+				title: "Экспресс-анализ",
 				_confirm: "Запуск"
 			},
 			filter: {
@@ -184,6 +200,12 @@ var messages = {
 				composite: "Мультивременной композит",
 				difference: "Попиксельная разность",
 				ratio: "Попиксельное соотношение"
+			}
+		},
+		express: {
+			method: {
+				title: "Метод анализа",
+				urban: "Определить изменения в городской застройке"
 			}
 		},
 		filter: {
