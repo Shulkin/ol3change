@@ -19,6 +19,7 @@ function changeDetection(method) {
 	}
 	var raster = new ol.source.Raster({
 		sources: [layer_1.getSource(), layer_2.getSource()],
+		threads: 5,
 		operationType: 'image', // on whole image
 		/**
 		 * Run calculations on pixel data.
@@ -38,6 +39,8 @@ function changeDetection(method) {
 			}
 		},
 		lib: {
+			mean: image_mean,
+			standard_deviation: image_standard_deviation,
 			process: process, // change detection function
 			change: change, // color of change ([255, 0, 0, 255] by default)
 			empty: empty // color of emptiness, transparent
@@ -51,7 +54,7 @@ function changeDetection(method) {
 		// set any parameters in data, like threshold for image difference
 		switch (method) { // depending on processing method
 			case 'difference':
-				data.threshold = 100;
+				data.threshold = 40;
 				break;
 			case 'ratio':
 				data.threshold = 0.7;
@@ -88,7 +91,7 @@ function expressAnalysis(method) {
 			switch (data.method) {
 				case 'urban':
 					// complex chain of procedures
-					var img1 = difference(pixels[0], pixels[1], 100); // difference
+					var img1 = difference(pixels[0], pixels[1], 40); // difference
 					var median1 = new MedianFilter().convertImage(img1, img1.width, img1.height);
 					median1 = removePixels(median1, [255, 255, 255, 255]); // remove white
 					var img2 = ratio(pixels[0], pixels[1], 0.7); // ratio
@@ -111,7 +114,9 @@ function expressAnalysis(method) {
 			MedianFilter: MedianFilter,
 			difference: image_difference,
 			MedianHistogram: MedianHistogram,
-			MedianHistogramFast: MedianHistogramFast
+			MedianHistogramFast: MedianHistogramFast,
+			mean: image_mean,
+			standard_deviation: image_standard_deviation,
 		}
 	});
 	raster.on('beforeoperations', function(event) {

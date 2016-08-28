@@ -26,6 +26,39 @@ var kernels = {
 	]
 };
 
+function image_mean(image) {
+	var i = 0;
+	var total = 0;
+	var bandsNum = 4; // r, g, b, a
+	while (i < image.data.length) {
+		var sum = 0;
+		for (j = 0; j < bandsNum; j++) {
+			sum += image.data[i + j];
+		}
+		sum /= bandsNum;
+		total += sum;
+		i += bandsNum;
+	}
+	return total / (image.data.length / bandsNum);
+}
+
+function image_standard_deviation(image) {
+	var i = 0;
+	var m = mean(image);
+	var disp = 0;
+	var bandsNum = 4; // r, g, b, a
+	while (i < image.data.length) {
+		var sum = 0;
+		for (j = 0; j < bandsNum; j++) {
+			sum += image.data[i + j];
+		}
+		sum /= bandsNum;
+		disp += (sum - m) * (sum - m);
+		i += bandsNum;
+	}
+	return Math.sqrt((1 / (image.data.length / bandsNum - 1)) * disp);
+}
+
 /**
 * Make a multi-temporal composite. Red band from src,
 * Green and Blue from dst. Simple.
@@ -60,22 +93,38 @@ function multitemporal_composite(src, dst) {
 * @param {Object} threshold Additional parameter.
 */
 function image_difference(src, dst, threshold) {
-	var width = src.width;
-	var height = src.height;
-	var srcData = src.data;
-	var dstData = dst.data;
-	var outputData = new Uint8ClampedArray(srcData.length);
+	var output = new Uint8ClampedArray(src.data.length);
 	var i = 0;
-	while (i < srcData.length) {
-		// calculate difference
-		var mean_src = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3;
-		var mean_dst = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3;
-		var delta = Math.abs(mean_dst - mean_src);
+	var bandsNum = 4; // r, g, b, a
+	// make some additional calculations
+	var mean1 = mean(src);
+	var mean2 = mean(dst);
+	var sdev1 = standard_deviation(src);
+	var sdev2 = standard_deviation(dst);
+	// calculate difference
+	while (i < src.data.length) {
+		var i1 = 0; // first brightness
+		for (var j = 0; j < bandsNum; j++) {
+			// calculate summation
+			i1 += src.data[i + j];
+		}
+		i1 /= bandsNum; // get mean value
+		// do the same for the second image
+		var i2 = 0; // second brightness
+		for (j = 0; j < bandsNum; j++) {
+			i2 += dst.data[i + j];
+		}
+		i2 /= bandsNum;
+		// attention! normalize i2
+		i2n = (mean1 / mean2) * (i2 - sdev2) + sdev1;
+		//var i1 = (src.data[i] + src.data[i + 1] + src.data[i + 2]) / 3; // first brightness
+		//var i2 = (dst.data[i] + dst.data[i + 1] + dst.data[i + 2]) / 3; // second brightness
+		var delta = Math.abs(i1 - i2n);
 		var pixel = delta > threshold ? change() : empty(); // result
-		for (var j = 0; j < 4; j++) outputData[i + j] = pixel[j];
+		for (var j = 0; j < 4; j++) output[i + j] = pixel[j]; // fill up output
 		i += 4;
 	}
-	return {data: outputData, width: width, height: height};
+	return {data: output, width: src.width, height: src.height};
 }
 
 /**
