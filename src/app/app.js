@@ -7,8 +7,8 @@
  * @require translate.js
  * @require local.js
  * @require modal.js
- * @require utils.js
  * @require median.js
+ * @require utils.js
  * @require lib.js
  * @require processing.js
  */
@@ -181,8 +181,10 @@ function m_div() {
 	var p = $("<p></p>").text(tr('change:method:title'));
 	var list = $("<select id='method'>");
 	list.append("<option value=composite>" + tr('change:method:composite') + "</option>");
-	list.append("<option value=difference>" + tr('change:method:difference') + "</option>");
-	list.append("<option value=ratio>" + tr('change:method:ratio') + "</option>");
+	list.append("<option value=difference_normalization>" + tr('change:method:difference') + " (Нормализовать)" + "</option>");
+	list.append("<option value=difference_without_normalization>" + tr('change:method:difference') + " (Нет)" + "</option>");
+	list.append("<option value=ratio_normalization>" + tr('change:method:ratio') + " (Нормализовать)" + "</option>");
+	list.append("<option value=ratio_without_normalization>" + tr('change:method:ratio') + " (Нет)" + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;

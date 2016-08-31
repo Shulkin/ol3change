@@ -105,15 +105,16 @@ function uid () {
 
 // add layer on map
 function addResult(source, title, name) {
-	var img = new ol.layer.Image({
+	var layer = new ol.layer.Image({
 		title: title,
 		name: name,
 		group: "imagery",
 		deletable: true,
 		source: source
 	});
-	map.addLayer(img);
+	map.addLayer(layer);
 	refreshLayersList(map);
+	return layer;
 }
 
 function empty() {

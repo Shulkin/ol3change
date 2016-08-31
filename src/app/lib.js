@@ -1,10 +1,3 @@
-// array of process functions
-var functions = {
-	composite: multitemporal_composite,
-	difference: image_difference,
-	ratio: image_ratio
-};
-
 // array of kernels for filters
 var kernels = {
 	sharpen: [
@@ -26,37 +19,107 @@ var kernels = {
 	]
 };
 
-function image_mean(image) {
+/**
+* Calculate mean of the image pixels
+*/
+function image_mean(data) {
 	var i = 0;
-	var total = 0;
-	var bandsNum = 4; // r, g, b, a
-	while (i < image.data.length) {
-		var sum = 0;
-		for (j = 0; j < bandsNum; j++) {
-			sum += image.data[i + j];
+	var len = 4; // bands num
+	var count = 0; // total counter
+	var bands = new Array(len).fill(0); // [r, g, b, a]
+	while (i < data.length) {
+		for (var j = 0; j < len; j++) {
+			bands[j] += data[i + j];
 		}
-		sum /= bandsNum;
-		total += sum;
-		i += bandsNum;
+		i += len;
+		count++;
 	}
-	return total / (image.data.length / bandsNum);
+	for (j = 0; j < len; j++) {
+		bands[j] /= count;
+	}
+	return bands;
 }
 
-function image_standard_deviation(image) {
+/**
+* Calculate standard deviation of the image pixels
+*/
+function image_standard_deviation(data) {
 	var i = 0;
-	var m = mean(image);
-	var disp = 0;
-	var bandsNum = 4; // r, g, b, a
-	while (i < image.data.length) {
-		var sum = 0;
-		for (j = 0; j < bandsNum; j++) {
-			sum += image.data[i + j];
+	var len = 4; // bands num
+	var count = 0; // total counter
+	var m = mean(data); // calculate mean
+	var dispersion = new Array(len).fill(0);
+	// calculate dispersion
+	while (i < data.length) {
+		for (var j = 0; j < len; j++) {
+			dispersion[j] += Math.pow(data[i + j] - m[j], 2);
 		}
-		sum /= bandsNum;
-		disp += (sum - m) * (sum - m);
-		i += bandsNum;
+		i += len;
+		count++;
 	}
-	return Math.sqrt((1 / (image.data.length / bandsNum - 1)) * disp);
+	var bands = new Array(len).fill(0);
+	for (j = 0; j < len; j++) {
+		bands[j] = Math.sqrt((1 / (count)) * dispersion[j]);
+	}
+	return bands;
+}
+
+/**
+* Normalize image pixels on all bands
+*/
+function image_normalize(image, m1, m2, s1, s2) {
+	var i = 0;
+	var len = 4; // bands num
+	var size = image.data.length;
+	var normalized = new Uint8ClampedArray(size);
+	while (i < size) {
+		for (var j = 0; j < len; j++) {
+			var temp = s2[j];
+			if (temp === 0) temp = 1; // division by zero is forbidden!
+			normalized[i + j] = (s1[j] / temp) * (image.data[i + j] - m2[j]) + m1[j];
+		}
+		i += len;
+	}
+	return {data: normalized, width: image.width, height: image.height};
+}
+
+/**
+* Apply threshold on image
+*/
+function image_thresholding(image, threshold, mode) {
+	var i = 0;
+	var len = 4; // bands num
+	var size = image.data.length;
+	var output = new Uint8ClampedArray(size);
+	while (i < size) {
+		if (mode) {
+			/**
+			* If vector length is greater than threshold
+			*/
+			var norm = 0; // calculate vector length
+			for (var j = 0; j < len; j++) {
+				norm += Math.pow(image.data[i + j], 2);
+			}
+			norm = Math.sqrt(norm);
+			var pixel = norm > threshold ? change() : empty(); // result
+		} else {
+			/**
+			* If ANY element in vector is greater than threshold
+			*/
+			var pixel = empty(); // no change by default
+			for (var j = 0; j < len; j++) {
+				if (image.data[i + j] > threshold) {
+					pixel = change();
+					break;
+				}
+			}
+		}
+		for (j = 0; j < len; j++) {
+			output[i + j] = pixel[j]; // fill up output
+		}
+		i += len;
+	}
+	return {data: output, width: image.width, height: image.height};
 }
 
 /**
@@ -67,98 +130,80 @@ function image_standard_deviation(image) {
 * @param {Object} data Additional parameters.
 */
 function multitemporal_composite(src, dst) {
-	var width = src.width;
-	var height = src.height;
-	var srcData = src.data;
-	var dstData = dst.data;
-	var outputData = new Uint8ClampedArray(srcData.length);
 	var i = 0;
-	while (i < srcData.length) {
-		var pixel = []; // result
-		pixel[0] = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3; // red
-		pixel[1] = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3; // green
-		pixel[2] = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3; // blue
-		pixel[3] = 255; // aplha
-		for (var j = 0; j < 4; j++) outputData[i + j] = pixel[j];
-		i += 4;
+	var len = 4; // bands num
+	var size = src.data.length;
+	var composite = new Uint8ClampedArray(size);
+	while (i < size) {
+		var pixel = new Array(len).fill(0); // result
+		// red band
+		for (var j = 0; j < len; j++) {
+			pixel[0] += src.data[i + j]
+		}
+		pixel[0] /= len;
+		// green and blue bands
+		for (var k = 1; k < 3; k++) {
+			for (var j = 0; j < len; j++) {
+				pixel[k] += dst.data[i + j];
+			}
+			pixel[k] /= len;
+		}
+		// alpha is always 255
+		pixel[3] = 255;
+		for (j = 0; j < len; j++) {
+			composite[i + j] = pixel[j];
+		}
+		i += len;
 	}
-	return {data: outputData, width: width, height: height};
+	return {data: composite, width: src.width, height: src.height};
 }
 
 /**
 * Calculates the difference between the brightness of the pixels.
-* Set change depending on threshold value from data.
 * @param {Image} src Input image 1.
 * @param {Image} dst Input image 2.
 * @param {Object} threshold Additional parameter.
 */
-function image_difference(src, dst, threshold) {
-	var output = new Uint8ClampedArray(src.data.length);
+function image_difference(src, dst) {
 	var i = 0;
-	var bandsNum = 4; // r, g, b, a
-	// make some additional calculations
-	var mean1 = mean(src);
-	var mean2 = mean(dst);
-	var sdev1 = standard_deviation(src);
-	var sdev2 = standard_deviation(dst);
-	// calculate difference
-	while (i < src.data.length) {
-		var i1 = 0; // first brightness
-		for (var j = 0; j < bandsNum; j++) {
-			// calculate summation
-			i1 += src.data[i + j];
+	var len = 4; // bands num
+	var size = src.data.length;
+	var delta = new Uint8ClampedArray(size);
+	while (i < size) {
+		for (var j = 0; j < len; j++) {
+			delta[i + j] = Math.abs(src.data[i + j] - dst.data[i + j]);
 		}
-		i1 /= bandsNum; // get mean value
-		// do the same for the second image
-		var i2 = 0; // second brightness
-		for (j = 0; j < bandsNum; j++) {
-			i2 += dst.data[i + j];
-		}
-		i2 /= bandsNum;
-		// attention! normalize i2
-		i2n = (mean1 / mean2) * (i2 - sdev2) + sdev1;
-		//var i1 = (src.data[i] + src.data[i + 1] + src.data[i + 2]) / 3; // first brightness
-		//var i2 = (dst.data[i] + dst.data[i + 1] + dst.data[i + 2]) / 3; // second brightness
-		var delta = Math.abs(i1 - i2n);
-		var pixel = delta > threshold ? change() : empty(); // result
-		for (var j = 0; j < 4; j++) output[i + j] = pixel[j]; // fill up output
-		i += 4;
+		// 4th alpha band will always be zero on difference image!
+		i += len;
 	}
-	return {data: output, width: src.width, height: src.height};
+	return {data: delta, width: src.width, height: src.height};
 }
 
 /**
-* Calculates the ratio between pixels. Change is determined by threshold.
+* Calculates the ratio between pixels.
 * @param {Image} src Input image 1.
 * @param {Image} dst Input image 2.
 * @param {Object} threshold Additional parameter.
 */
 function image_ratio(src, dst, threshold) {
-	var width = src.width;
-	var height = src.height;
-	var srcData = src.data;
-	var dstData = dst.data;
-	var outputData = new Uint8ClampedArray(srcData.length);
 	var i = 0;
-	while (i < srcData.length) {
-		// calculate ratio
-		var mean_src = (srcData[i] + srcData[i + 1] + srcData[i + 2]) / 3;
-		var mean_dst = (dstData[i] + dstData[i + 1] + dstData[i + 2]) / 3;
-		if (mean_src === 0) mean_src += 1;
-		if (mean_dst === 0) mean_dst += 1;
-		var ratio = Math.min(mean_src, mean_dst) / Math.max(mean_src, mean_dst);
-		var pixel = ratio > threshold ? change() : empty(); // result
-		for (var j = 0; j < 4; j++) outputData[i + j] = pixel[j];
-		i += 4;
+	var len = 4; // bands num
+	var size = src.data.length;
+	var ratio = new Uint8ClampedArray(size);
+	while (i < size) {
+		for (var j = 0; j < len; j++) {
+			ratio[i + j] = Math.atan(src.data[i + j] / dst.data[i + j]) - (Math.PI / 4);
+		}
+		i += len;
 	}
-	return {data: outputData, width: width, height: height};
+	return {data: ratio, width: src.width, height: src.height};
 }
 
 /**
 * Normalize a kernel N x N.
 * @param {Array.<number>} kernel Kernel.
 */
-function normalize(kernel) {
+function kernel_normalize(kernel) {
 	var len = kernel.length;
 	var normal = new Array(len);
 	var i, sum = 0;

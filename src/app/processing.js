@@ -3,7 +3,6 @@
 * @param {String} method Method's name, i.e. id in array of functions.
 */
 function changeDetection(method) {
-	var process = functions[method] // change detection function
 	// both images to compare and detect changes
 	var name_1 = get("layer_change_1");
 	var name_2 = get("layer_change_2");
@@ -19,7 +18,6 @@ function changeDetection(method) {
 	}
 	var raster = new ol.source.Raster({
 		sources: [layer_1.getSource(), layer_2.getSource()],
-		threads: 5,
 		operationType: 'image', // on whole image
 		/**
 		 * Run calculations on pixel data.
@@ -28,22 +26,63 @@ function changeDetection(method) {
 		 * @return {Array} The output pixel.
 		 */
 		operation: function(pixels, data) {
+			console.log("change detection method: " + data.method);
+			// if normalization option is enabled
+			if (data.method === 'difference_normalization' ||
+				data.method === 'ratio_normalization') {
+				//console.log("do normalization");
+				var m1 = mean(pixels[0].data);
+				var m2 = mean(pixels[1].data);
+				var s1 = standard_deviation(pixels[0].data);
+				var s2 = standard_deviation(pixels[1].data);
+				pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
+				/*
+				var m3 = mean(pixels[1].data);
+				var s3 = standard_deviation(pixels[1].data);
+				console.log("pixels[0]: [mean: " + m1 + ", sdev: " + s1 + "]");
+				console.log("pixels[1]: [mean: " + m2 + ", sdev: " + s2 + "]");
+				console.log("pixels[1] normalized: [mean: " + m3 + ", sdev: " + s3 + "]");
+				*/
+			}
 			switch (data.method) {
 				case 'composite':
+					//console.log("make rgb-composite");
 					// don't need threshold in composite
-					return process(pixels[0], pixels[1]);
+					return composite(pixels[0], pixels[1]);
+					break;
+				case 'difference_normalization':
+				case 'difference_without_normalization':
+					//console.log("calculate difference");
+					var img = difference(pixels[0], pixels[1]);
+					//console.log("threshold image");
+					return thresholding(img, data.threshold, true);
+					break;
+				case 'ratio_normalization':
+				case 'ratio_without_normalization':
+					//console.log("calculate ratio");
+					var img = ratio(pixels[0], pixels[1]);
+					//console.log("threshold image");
+					return thresholding(img, data.threshold, true);
 					break;
 				default:
-					return process(pixels[0], pixels[1], data.threshold);
+					return pixels[0]; // unnecessary
 					break;
 			}
 		},
 		lib: {
+			// colors
+			empty: empty, // color of emptiness, transparent
+			change: change, // color of change ([255, 0, 0, 255] by default)
+			// statistic functions
 			mean: image_mean,
 			standard_deviation: image_standard_deviation,
-			process: process, // change detection function
-			change: change, // color of change ([255, 0, 0, 255] by default)
-			empty: empty // color of emptiness, transparent
+			// utils
+			normalize: image_normalize,
+			thresholding: image_thresholding,
+			// any change detection functions
+			ratio: image_ratio,
+			difference: image_difference,
+			composite: multitemporal_composite
 		}
 	});
 	// set handler on beforeoperations
@@ -53,11 +92,17 @@ function changeDetection(method) {
 		data.method = method;
 		// set any parameters in data, like threshold for image difference
 		switch (method) { // depending on processing method
-			case 'difference':
-				data.threshold = 40;
+			case 'difference_normalization':
+				data.threshold = 80;
 				break;
-			case 'ratio':
-				data.threshold = 0.7;
+			case 'difference_without_normalization':
+				data.threshold = 80;
+				break;
+			case 'ratio_normalization':
+				data.threshold = 0.5;
+				break;
+			case 'ratio_without_normalization':
+				data.threshold = 0.5;
 				break;
 		}
 	});
@@ -105,18 +150,25 @@ function expressAnalysis(method) {
 			}
 		},
 		lib: {
-			// any procedures needed for complete analysis
+			// colors
 			empty: empty,
 			change: change,
-			ratio: image_ratio,
-			removePixels: remove,
-			overlapPixels: overlap,
-			MedianFilter: MedianFilter,
-			difference: image_difference,
-			MedianHistogram: MedianHistogram,
-			MedianHistogramFast: MedianHistogramFast,
+			// statistic functions
 			mean: image_mean,
 			standard_deviation: image_standard_deviation,
+			// utils
+			normalize: image_normalize,
+			thresholding: image_thresholding,
+			// change detection sub-pixel methods
+			ratio: image_ratio,
+			difference: image_difference,
+			// additional utils
+			removePixels: remove,
+			overlapPixels: overlap,
+			// functions for median filter
+			MedianFilter: MedianFilter,
+			MedianHistogram: MedianHistogram,
+			MedianHistogramFast: MedianHistogramFast
 		}
 	});
 	raster.on('beforeoperations', function(event) {
@@ -149,26 +201,31 @@ function kernelFilter(type) {
 		operationType: 'image',
 		operation: function(pixels, data) {
 			var source = pixels[0];
+			var output; // result of raster operation
 			switch (data.type) {
 				case 'edge':
 					// apply edge detector
 					var edges = convolve(source, data.matrix);
 					// remove black color, leaving ONLY edges
-					return removePixels(edges, [0, 0, 0, 255]);
+					output = removePixels(edges, [0, 0, 0, 255]);
 					break;
 				case 'median':
 					var median = new MedianFilter().convertImage(source, source.width, source.height);
-					return removePixels(median, [0, 0, 0, 255]);
+					output = removePixels(median, [0, 0, 0, 255]);
 					break;
 				default:
 					// just apply kernel
-					return convolve(source, data.matrix);
+					output = convolve(source, data.matrix);
 					break;
 			}
+			return output;
 		},
 		lib: {
+			// function to apply kernel
 			convolve: convolve,
+			// utils
 			removePixels: remove,
+			// functions for median filter
 			MedianFilter: MedianFilter,
 			MedianHistogram: MedianHistogram,
 			MedianHistogramFast: MedianHistogramFast
@@ -179,7 +236,7 @@ function kernelFilter(type) {
 		var data = event.data;
 		data.type = type;
 		if (type != "median") { // don't need kernel for median filter
-			data.matrix = normalize(kernels[type]); // get kernel
+			data.matrix = kernel_normalize(kernels[type]); // get kernel
 		}
 	});
 	var title = getShortTitle("Фильтр", [layer.get('title')]);
