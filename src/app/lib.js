@@ -172,8 +172,9 @@ function image_difference(src, dst) {
 	while (i < size) {
 		for (var j = 0; j < len; j++) {
 			delta[i + j] = Math.abs(src.data[i + j] - dst.data[i + j]);
+			// 4th alpha band will always be zero on difference image!
+			// cause 255 - 255 = 0
 		}
-		// 4th alpha band will always be zero on difference image!
 		i += len;
 	}
 	return {data: delta, width: src.width, height: src.height};
@@ -193,6 +194,8 @@ function image_ratio(src, dst, threshold) {
 	while (i < size) {
 		for (var j = 0; j < len; j++) {
 			ratio[i + j] = Math.atan(src.data[i + j] / dst.data[i + j]) - (Math.PI / 4);
+			// 4th alpha band will always be zero on ratio image!
+			// cause arctan(255 / 255) = arctan(1) = Pi / 4 => Pi / 4 - Pi / 4 = 0
 		}
 		i += len;
 	}

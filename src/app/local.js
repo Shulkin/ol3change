@@ -81,6 +81,10 @@ var messages = {
 				first: "First layer",
 				second: "Second layer"
 			},
+			params: {
+				threshold: "Threshold",
+				normalize: "Normalize"
+			},
 			method: {
 				title: "Change detection method",
 				composite: "Multitemporal composite",
@@ -194,6 +198,10 @@ var messages = {
 			_layer: {
 				first: "Первый слой",
 				second: "Второй слой"
+			},
+			params: {
+				threshold: "Пороговое значение",
+				normalize: "Нормализовать изображение"
 			},
 			method: {
 				title: "Метод определения изменений",

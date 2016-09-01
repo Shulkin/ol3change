@@ -160,7 +160,7 @@ function initSatelliteMosaics() {
 	highlight.setZIndex(9999); // on top
 }
 
-function l_div(title, id) {
+function layers_list_div(title, id) {
 	var div = $("<div>");
 	var p = $("<p></p>").text(title);
 	var list = $("<select id='" + id + "'>");
@@ -176,21 +176,52 @@ function l_div(title, id) {
 	return div;
 }
 
-function m_div() {
+function parameters_div(title, type, id, obj) {
+	var div = $("<div>");
+	var p = $("<p></p>").text(title);
+	switch (type) {
+		case "text":
+			var elem = $("<input type='type' id='" + id + "'>");
+			break;
+		case "number":
+			var elem = $("<input type='number' id='" + id +
+				"' min='" + obj.min +
+				"' max='" + obj.max +
+				"' value='" + obj.value +
+				"' step='" + obj.step + "'>");
+			break;
+		case "checkbox":
+			var elem = $("<br><input type='checkbox' id='" + id + "' checked> " +
+				"<label for='" + id + "'>" + title + "</label>");
+			break;
+	}
+	if (type != "checkbox") {
+		// for checkbox, title is on the right side of an element
+		div.append(p);
+	}
+	div.append(elem, "</div>");
+	return div;
+}
+
+function empty_div(id) {
+	var div = $("<div id='" + id + "'>");
+	div.append("</div>"); // close empty div
+	return div;
+}
+
+function change_method_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('change:method:title'));
 	var list = $("<select id='method'>");
 	list.append("<option value=composite>" + tr('change:method:composite') + "</option>");
-	list.append("<option value=difference_normalization>" + tr('change:method:difference') + " (Нормализовать)" + "</option>");
-	list.append("<option value=difference_without_normalization>" + tr('change:method:difference') + " (Нет)" + "</option>");
-	list.append("<option value=ratio_normalization>" + tr('change:method:ratio') + " (Нормализовать)" + "</option>");
-	list.append("<option value=ratio_without_normalization>" + tr('change:method:ratio') + " (Нет)" + "</option>");
+	list.append("<option value=difference>" + tr('change:method:difference') + "</option>");
+	list.append("<option value=ratio>" + tr('change:method:ratio') + "</option>");
 	list.append("</select>");
 	div.append(p, list, "</div>");
 	return div;
 }
 
-function e_div() {
+function express_method_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('express:method:title'));
 	var list = $("<select id='express_method'>");
@@ -200,7 +231,7 @@ function e_div() {
 	return div;
 }
 
-function f_div() {
+function filter_type_div() {
 	var div = $("<div>");
 	var p = $("<p></p>").text(tr('filter:type:title'));
 	var list = $("<select id='filter_type'>");
@@ -219,10 +250,47 @@ $('#confirm').on('shown.bs.modal', function() {
 	elem.html(""); // clear previous html
 	elem.append(
 		// detect changes between these layers
-		l_div(tr('change:_layer:first'), "layer_change_1"),
-		l_div(tr('change:_layer:second'), "layer_change_2"),
-		m_div() // method
+		layers_list_div(tr('change:_layer:first'), "layer_change_1"),
+		layers_list_div(tr('change:_layer:second'), "layer_change_2"),
+		change_method_div(), // method & corresponding change handler
+		// additional parameters
+		empty_div("change_params") // by default, none!
 	);
+	$('#method').on('change', function() {
+		var value = $(this).val(); // selected method
+		var div = $("#change_params");
+		div.html(""); // clear params
+		switch (value) {
+			case "difference":
+				// threshold value
+				div.append(parameters_div(
+					tr("change:params:threshold"),
+					"number", "change_threshold",
+					{min: 0, max: 170, step: 1, value: 90}
+				));
+				// normalize second image?
+				div.append(parameters_div(
+					tr("change:params:normalize"),
+					"checkbox", "change_normalize",
+					{} // leave object empty
+				));
+				break;
+			case "ratio":
+				// threshold value
+				div.append(parameters_div(
+					tr("change:params:threshold"),
+					"number", "change_threshold",
+					{min: 0, max: 10, step: 0.1, value: 0.1}
+				));
+				// normalize second image?
+				div.append(parameters_div(
+					tr("change:params:normalize"),
+					"checkbox", "change_normalize",
+					{} // leave object empty
+				));
+				break;
+		}
+	});
 });
 
 // handler on show express analysis window
@@ -231,9 +299,9 @@ $('#express').on('shown.bs.modal', function() {
 	elem.html(""); // clear previous html
 	elem.append(
 		// analyse these data layers
-		l_div(tr('change:_layer:first'), "layer_express_1"),
-		l_div(tr('change:_layer:second'), "layer_express_2"),
-		e_div() // express method
+		layers_list_div(tr('change:_layer:first'), "layer_express_1"),
+		layers_list_div(tr('change:_layer:second'), "layer_express_2"),
+		express_method_div() // express method
 	);
 });
 
@@ -243,8 +311,8 @@ $('#filter').on('shown.bs.modal', function() {
 	elem.html(""); // clear previous html
 	elem.append(
 		// filtered layer
-		l_div(tr('filter:_layer'), "layer_filter"),
-		f_div() // filter type
+		layers_list_div(tr('filter:_layer'), "layer_filter"),
+		filter_type_div() // filter type
 	);
 });
 

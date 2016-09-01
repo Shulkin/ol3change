@@ -26,42 +26,25 @@ function changeDetection(method) {
 		 * @return {Array} The output pixel.
 		 */
 		operation: function(pixels, data) {
-			//console.log("change detection method: " + data.method);
 			// if normalization option is enabled
-			if (data.method === 'difference_normalization' ||
-				data.method === 'ratio_normalization') {
-				//console.log("do normalization");
+			if (data.normalize) {
 				var m1 = mean(pixels[0].data);
 				var m2 = mean(pixels[1].data);
 				var s1 = standard_deviation(pixels[0].data);
 				var s2 = standard_deviation(pixels[1].data);
 				pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
-				/*
-				var m3 = mean(pixels[1].data);
-				var s3 = standard_deviation(pixels[1].data);
-				console.log("pixels[0]: [mean: " + m1 + ", sdev: " + s1 + "]");
-				console.log("pixels[1]: [mean: " + m2 + ", sdev: " + s2 + "]");
-				console.log("pixels[1] normalized: [mean: " + m3 + ", sdev: " + s3 + "]");
-				*/
 			}
 			switch (data.method) {
 				case 'composite':
-					//console.log("make rgb-composite");
 					// don't need threshold in composite
 					return composite(pixels[0], pixels[1]);
 					break;
-				case 'difference_normalization':
-				case 'difference_without_normalization':
-					//console.log("calculate difference");
+				case 'difference':
 					var img = difference(pixels[0], pixels[1]);
-					//console.log("threshold image");
 					return thresholding(img, data.threshold, true);
 					break;
-				case 'ratio_normalization':
-				case 'ratio_without_normalization':
-					//console.log("calculate ratio");
+				case 'ratio':
 					var img = ratio(pixels[0], pixels[1]);
-					//console.log("threshold image");
 					return thresholding(img, data.threshold, true);
 					break;
 				default:
@@ -91,19 +74,9 @@ function changeDetection(method) {
 		var data = event.data;
 		data.method = method;
 		// set any parameters in data, like threshold for image difference
-		switch (method) { // depending on processing method
-			case 'difference_normalization':
-				data.threshold = 80;
-				break;
-			case 'difference_without_normalization':
-				data.threshold = 80;
-				break;
-			case 'ratio_normalization':
-				data.threshold = 0.5;
-				break;
-			case 'ratio_without_normalization':
-				data.threshold = 0.5;
-				break;
+		if (method != "composite") {
+			data.threshold = val("change_threshold");
+			data.normalize = $('#change_normalize').prop('checked');
 		}
 	});
 	var title = getShortTitle("Изменения", [layer_1.get('title'), layer_2.get('title')]);
@@ -144,12 +117,12 @@ function expressAnalysis(method) {
 					pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
 					// difference
 					var diff = difference(pixels[0], pixels[1]);
-					diff = thresholding(diff, 80, true);
+					diff = thresholding(diff, 90, true);
 					var median1 = new MedianFilter().convertImage(diff, diff.width, diff.height);
 					median1 = removePixels(median1, [255, 255, 255, 255]); // remove white
 					// ratio
 					var rat = ratio(pixels[0], pixels[1]);
-					rat = thresholding(rat, 0.5, true);
+					rat = thresholding(rat, 0, true);
 					var median2 = new MedianFilter().convertImage(rat, rat.width, rat.height);
 					median2 = removePixels(median2, [255, 255, 255, 255]); // remove white
 					// result

@@ -33,9 +33,14 @@ function zoomToVladivostok() {
 	map.getView().setZoom(zoom_vl);
 }
 
-function get(id) { // get selected value by id
+function get(id) { // get selected value from list by id
 	var elem = document.getElementById(id);
 	return elem.options[elem.selectedIndex].value;
+}
+
+function val(id) {
+	var elem = document.getElementById(id);
+	return elem.value;
 }
 
 function refreshLayersList(map) {
