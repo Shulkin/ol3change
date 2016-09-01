@@ -26,7 +26,7 @@ function changeDetection(method) {
 		 * @return {Array} The output pixel.
 		 */
 		operation: function(pixels, data) {
-			console.log("change detection method: " + data.method);
+			//console.log("change detection method: " + data.method);
 			// if normalization option is enabled
 			if (data.method === 'difference_normalization' ||
 				data.method === 'ratio_normalization') {
@@ -136,12 +136,23 @@ function expressAnalysis(method) {
 			switch (data.method) {
 				case 'urban':
 					// complex chain of procedures
-					var img1 = difference(pixels[0], pixels[1], 40); // difference
-					var median1 = new MedianFilter().convertImage(img1, img1.width, img1.height);
+					// normalize pixels[1]
+					var m1 = mean(pixels[0].data);
+					var m2 = mean(pixels[1].data);
+					var s1 = standard_deviation(pixels[0].data);
+					var s2 = standard_deviation(pixels[1].data);
+					pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
+					// difference
+					var diff = difference(pixels[0], pixels[1]);
+					diff = thresholding(diff, 80, true);
+					var median1 = new MedianFilter().convertImage(diff, diff.width, diff.height);
 					median1 = removePixels(median1, [255, 255, 255, 255]); // remove white
-					var img2 = ratio(pixels[0], pixels[1], 0.7); // ratio
-					var median2 = new MedianFilter().convertImage(img2, img2.width, img2.height);
+					// ratio
+					var rat = ratio(pixels[0], pixels[1]);
+					rat = thresholding(rat, 0.5, true);
+					var median2 = new MedianFilter().convertImage(rat, rat.width, rat.height);
 					median2 = removePixels(median2, [255, 255, 255, 255]); // remove white
+					// result
 					return overlapPixels(median1, median2);
 					break;
 				default:
