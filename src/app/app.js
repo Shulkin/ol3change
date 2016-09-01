@@ -266,7 +266,7 @@ $('#confirm').on('shown.bs.modal', function() {
 				div.append(parameters_div(
 					tr("change:params:threshold"),
 					"number", "change_threshold",
-					{min: 0, max: 170, step: 1, value: 90}
+					{min: 0, max: 255, step: 1, value: 90}
 				));
 				// normalize second image?
 				div.append(parameters_div(
@@ -312,8 +312,25 @@ $('#filter').on('shown.bs.modal', function() {
 	elem.append(
 		// filtered layer
 		layers_list_div(tr('filter:_layer'), "layer_filter"),
-		filter_type_div() // filter type
+		filter_type_div(), // filter type
+		// additional parameters
+		empty_div("filter_params") // by default, none!
 	);
+	$('#filter_type').on('change', function() {
+		var value = $(this).val(); // selected method
+		var div = $("#filter_params");
+		div.html(""); // clear params
+		switch (value) {
+			case "median":
+				// size of the kernel for median filter
+				div.append(parameters_div(
+					tr("filter:params:size"),
+					"number", "median_filter_size",
+					{min: 3, max: 10, step: 1, value: 5}
+				));
+				break;
+		}
+	});
 });
 
 // translate main menu

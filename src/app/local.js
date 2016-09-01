@@ -100,6 +100,9 @@ var messages = {
 		},
 		filter: {
 			_layer: "Select layer",
+			params: {
+				size: "Window size"
+			},
 			type: {
 				title: "Select filter",
 				sharpen: "Sharpen",
@@ -218,6 +221,9 @@ var messages = {
 		},
 		filter: {
 			_layer: "Выберите слой",
+			params: {
+				size: "Размер окна"
+			},
 			type: {
 				title: "Выберите тип фильтра",
 				sharpen: "Увеличить резкость",

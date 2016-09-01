@@ -194,7 +194,10 @@ function kernelFilter(type) {
 					output = removePixels(edges, [0, 0, 0, 255]);
 					break;
 				case 'median':
-					var median = new MedianFilter().convertImage(source, source.width, source.height);
+					var filter = new MedianFilter();
+					filter.maskHeight = data.size;
+					filter.maskWidth = data.size;
+					var median = filter.convertImage(source, source.width, source.height);
 					output = removePixels(median, [0, 0, 0, 255]);
 					break;
 				default:
@@ -219,7 +222,10 @@ function kernelFilter(type) {
 		// the event.data object will be passed to operations
 		var data = event.data;
 		data.type = type;
-		if (type != "median") { // don't need kernel for median filter
+		if (type === "median") {
+			// don't need kernel for median filter, set some parameters instead
+			data.size = val("median_filter_size");
+		} else {
 			data.matrix = kernel_normalize(kernels[type]); // get kernel
 		}
 	});
