@@ -191,8 +191,16 @@ function parameters_div(title, type, id, obj) {
 				"' step='" + obj.step + "'>");
 			break;
 		case "checkbox":
-			var elem = $("<br><input type='checkbox' id='" + id + "' checked> " +
+			var elem = $("<input type='checkbox' id='" + id + "' checked> " +
 				"<label for='" + id + "'>" + title + "</label>");
+			break;
+		case "select":
+			var elem = $("<select id='" + id + "'>");
+			// obj is an array in this case!
+			for (var i = 0; i < obj.length; i++) {
+				elem.append("<option value='" + obj[i].value + "'>" + obj[i].title + "</option>");
+			}
+			elem.append("</select>");
 			break;
 	}
 	if (type != "checkbox") {
@@ -262,34 +270,57 @@ $('#confirm').on('shown.bs.modal', function() {
 		div.html(""); // clear params
 		switch (value) {
 			case "difference":
+				// threshold or stretch?
+				div.append(parameters_div(
+					tr("change:params:output:type"),
+					"select", "change_outputType",
+					[{value: "threshold", title: tr("change:params:output:threshold")},
+					{value: "stretch", title: tr("change:params:output:stretch")}]
+				));
 				// threshold value
 				div.append(parameters_div(
 					tr("change:params:threshold"),
 					"number", "change_threshold",
-					{min: 0, max: 255, step: 1, value: 90}
-				));
-				// normalize second image?
-				div.append(parameters_div(
-					tr("change:params:normalize"),
-					"checkbox", "change_normalize",
-					{} // leave object empty
+					/**
+					* Important!
+					* Set threshold value for image pixels difference
+					* 1-3 bands are [0..500] max after Abs, 4 band always 0
+					* Vector length [0..866] => max is 900
+					* Default threshold = 90
+					*/
+					{min: 0, max: 900, step: 1, value: 90}
 				));
 				break;
 			case "ratio":
+				// threshold or stretch?
+				div.append(parameters_div(
+					tr("change:params:output:type"),
+					"select", "change_outputType",
+					[{value: "threshold", title: tr("change:params:output:threshold")},
+					{value: "stretch", title: tr("change:params:output:stretch")}]
+				));
 				// threshold value
 				div.append(parameters_div(
 					tr("change:params:threshold"),
 					"number", "change_threshold",
-					{min: 0, max: 10, step: 0.1, value: 0.1}
-				));
-				// normalize second image?
-				div.append(parameters_div(
-					tr("change:params:normalize"),
-					"checkbox", "change_normalize",
-					{} // leave object empty
+					/**
+					* Important!
+					* Set threshold value for image pixels ratio
+					* 1-3 bands are [-Pi/2..Pi/2] initially, [0..Pi/2 = 1,57] after Abs, 4 band always 0 (by force!)
+					* Vector length [0..2,17] => max is 2.5
+					* Default threshold = 1.65
+					* Values are rounded up to 2 digits
+					*/
+					{min: 0, max: 2.5, step: 0.01, value: 1.65}
 				));
 				break;
 		}
+		/**
+		* Important!
+		* Empirical values for threshold are:
+		* Difference = 90
+		* Ratio = 1.65
+		*/
 	});
 });
 

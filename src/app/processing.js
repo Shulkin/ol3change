@@ -27,6 +27,13 @@ function changeDetection(method) {
 		 */
 		operation: function(pixels, data) {
 			// if normalization option is enabled
+				/*
+				console.log("initial input data:");
+				console.log("");
+				for (var i = 0; i < 2; i++) log("pixels[" + i + "]:", pixels[i].data, false);
+				console.log("");
+				console.log("normalize...");
+				*/
 			if (data.normalize) {
 				var m1 = mean(pixels[0].data);
 				var m2 = mean(pixels[1].data);
@@ -34,18 +41,49 @@ function changeDetection(method) {
 				var s2 = standard_deviation(pixels[1].data);
 				pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
 			}
+				/*
+				console.log("");
+				for (var i = 0; i < 2; i++) log("pixels[" + i + "]:", pixels[i].data, false);
+				console.log("");
+				*/
 			switch (data.method) {
 				case 'composite':
 					// don't need threshold in composite
 					return composite(pixels[0], pixels[1]);
 					break;
 				case 'difference':
+						//console.log("calculate difference...");
 					var img = difference(pixels[0], pixels[1]);
-					return thresholding(img, data.threshold, true);
+						//log("", img.data, true);
+						//console.log("abs image");
+					img = abs(img);
+						//log("", img.data, true);
+					if (data.outputType === "threshold") { // threshold
+							//console.log("threshold image");
+						img = thresholding(img, data.threshold, true);
+					} else { // stretch
+							//console.log("stretch image");
+						img = stretch(img, null);
+					}
+						//log("", img.data, true);
+					return img;
 					break;
 				case 'ratio':
+						//console.log("calculate ratio...");
 					var img = ratio(pixels[0], pixels[1]);
-					return thresholding(img, data.threshold, true);
+						//log("", img.data, true);
+						//console.log("abs image");
+					img = abs(img);
+						//log("", img.data, true);
+					if (data.outputType === "threshold") { // threshold
+							//console.log("threshold image");
+						img = thresholding(img, data.threshold, true);
+					} else { // stretch
+							//console.log("stretch image");
+						img = stretch(img, null);
+					}
+						//log("", img.data, true);
+					return img;
 					break;
 				default:
 					return pixels[0]; // unnecessary
@@ -57,11 +95,16 @@ function changeDetection(method) {
 			empty: empty, // color of emptiness, transparent
 			change: change, // color of change ([255, 0, 0, 255] by default)
 			// statistic functions
+			max: image_max,
+			min: image_min,
 			mean: image_mean,
 			standard_deviation: image_standard_deviation,
 			// utils
+			abs: image_abs,
+			stretch: image_stretch,
 			normalize: image_normalize,
 			thresholding: image_thresholding,
+			log: log_statistics,
 			// any change detection functions
 			ratio: image_ratio,
 			difference: image_difference,
@@ -75,8 +118,9 @@ function changeDetection(method) {
 		data.method = method;
 		// set any parameters in data, like threshold for image difference
 		if (method != "composite") {
+			data.normalize = true; // always normalize by default
 			data.threshold = val("change_threshold");
-			data.normalize = $('#change_normalize').prop('checked');
+			data.outputType = get('change_outputType');
 		}
 	});
 	var title = getShortTitle("Изменения", [layer_1.get('title'), layer_2.get('title')]);

@@ -82,8 +82,12 @@ var messages = {
 				second: "Second layer"
 			},
 			params: {
-				threshold: "Threshold",
-				normalize: "Normalize"
+				output: {
+					type: "Output",
+					threshold: "By threshold",
+					stretch: "Stretch colors"
+				},
+				threshold: "Threshold"
 			},
 			method: {
 				title: "Change detection method",
@@ -203,8 +207,12 @@ var messages = {
 				second: "Второй слой"
 			},
 			params: {
-				threshold: "Пороговое значение",
-				normalize: "Нормализовать изображение"
+				output: {
+					type: "На выходе",
+					threshold: "Применить пороговый фильтр",
+					stretch: "Растянуть цвета"
+				},
+				threshold: "Пороговое значение"
 			},
 			method: {
 				title: "Метод определения изменений",

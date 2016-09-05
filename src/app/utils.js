@@ -23,6 +23,10 @@ String.prototype.insert = function (index, string) {
 	}
 };
 
+function round(number, digits) {
+	return parseFloat(number.toFixed(digits));
+}
+
 function zoomToFullExtent() {
 	map.getView().setCenter(center_max);
 	map.getView().setZoom(zoom_max);

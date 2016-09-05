@@ -19,6 +19,19 @@ var kernels = {
 	]
 };
 
+// for debug
+function log_statistics(title, data, separate) {
+	if (separate) console.log("");
+	if (title != "") {
+		console.log(title);
+	}
+	console.log("max: " + max(data));
+	console.log("min: " + min(data));
+	console.log("mean: " + mean(data));
+	console.log("sdev: " + standard_deviation(data));
+	if (separate) console.log("");
+}
+
 /**
 * Calculate mean of the image pixels
 */
@@ -38,6 +51,42 @@ function image_mean(data) {
 		bands[j] /= count;
 	}
 	return bands;
+}
+
+/**
+* Calculate maximum of the image pixels
+*/
+function image_max(data) {
+	var i = 0;
+	var len = 4; // bands num
+	var count = 0; // total counter
+	var result = new Array(len).fill(Number.NEGATIVE_INFINITY);
+	while (i < data.length) {
+		for (var j = 0; j < len; j++) {
+			if (result[j] < data[i + j]) result[j] = data[i + j];
+		}
+		i += len;
+		count++;
+	}
+	return result;
+}
+
+/**
+* Calculate minimum of the image pixels
+*/
+function image_min(data) {
+	var i = 0;
+	var len = 4; // bands num
+	var count = 0; // total counter
+	var result = new Array(len).fill(Number.POSITIVE_INFINITY);
+	while (i < data.length) {
+		for (var j = 0; j < len; j++) {
+			if (result[j] > data[i + j]) result[j] = data[i + j];
+		}
+		i += len;
+		count++;
+	}
+	return result;
 }
 
 /**
@@ -71,7 +120,8 @@ function image_normalize(image, m1, m2, s1, s2) {
 	var i = 0;
 	var len = 4; // bands num
 	var size = image.data.length;
-	var normalized = new Uint8ClampedArray(size);
+	// Float32 for high precision
+	var normalized = new Float32Array(size);
 	while (i < size) {
 		for (var j = 0; j < len; j++) {
 			var temp = s2[j];
@@ -81,45 +131,6 @@ function image_normalize(image, m1, m2, s1, s2) {
 		i += len;
 	}
 	return {data: normalized, width: image.width, height: image.height};
-}
-
-/**
-* Apply threshold on image
-*/
-function image_thresholding(image, threshold, mode) {
-	var i = 0;
-	var len = 4; // bands num
-	var size = image.data.length;
-	var output = new Uint8ClampedArray(size);
-	while (i < size) {
-		if (mode) {
-			/**
-			* If vector length is greater than threshold
-			*/
-			var norm = 0; // calculate vector length
-			for (var j = 0; j < len; j++) {
-				norm += Math.pow(image.data[i + j], 2);
-			}
-			norm = Math.sqrt(norm);
-			var pixel = norm > threshold ? change() : empty(); // result
-		} else {
-			/**
-			* If ANY element in vector is greater than threshold
-			*/
-			var pixel = empty(); // no change by default
-			for (var j = 0; j < len; j++) {
-				if (image.data[i + j] > threshold) {
-					pixel = change();
-					break;
-				}
-			}
-		}
-		for (j = 0; j < len; j++) {
-			output[i + j] = pixel[j]; // fill up output
-		}
-		i += len;
-	}
-	return {data: output, width: image.width, height: image.height};
 }
 
 /**
@@ -133,6 +144,7 @@ function multitemporal_composite(src, dst) {
 	var i = 0;
 	var len = 4; // bands num
 	var size = src.data.length;
+	// Uint8Clamped [0..255] because we need to keep initial discrete pixel values
 	var composite = new Uint8ClampedArray(size);
 	while (i < size) {
 		var pixel = new Array(len).fill(0); // result
@@ -168,12 +180,14 @@ function image_difference(src, dst) {
 	var i = 0;
 	var len = 4; // bands num
 	var size = src.data.length;
-	var delta = new Uint8ClampedArray(size);
+	// Float32 for high precision
+	var delta = new Float32Array(size);
+	// negative numbers will be clamped afterwards
 	while (i < size) {
 		for (var j = 0; j < len; j++) {
-			delta[i + j] = Math.abs(src.data[i + j] - dst.data[i + j]);
-			// 4th alpha band will always be zero on difference image!
-			// cause 255 - 255 = 0
+			// do not add Math.abs()! Keep negative values for statistics
+			delta[i + j] = src.data[i + j] - dst.data[i + j];
+			// 4th alpha band may be always 0 on difference image!
 		}
 		i += len;
 	}
@@ -186,20 +200,94 @@ function image_difference(src, dst) {
 * @param {Image} dst Input image 2.
 * @param {Object} threshold Additional parameter.
 */
-function image_ratio(src, dst, threshold) {
+function image_ratio(src, dst) {
 	var i = 0;
 	var len = 4; // bands num
 	var size = src.data.length;
-	var ratio = new Uint8ClampedArray(size);
+	// Float32 for high precision
+	var ratio = new Float32Array(size);
+	// negative numbers will be clamped afterwards
 	while (i < size) {
 		for (var j = 0; j < len; j++) {
-			ratio[i + j] = Math.atan(src.data[i + j] / dst.data[i + j]) - (Math.PI / 4);
-			// 4th alpha band will always be zero on ratio image!
-			// cause arctan(255 / 255) = arctan(1) = Pi / 4 => Pi / 4 - Pi / 4 = 0
+			if (dst.data[i + j] === 0) {
+				// division by zero is forbidden!
+				if (src.data[i + j] < 0) { // -infinity
+					ratio[i + j] = -Math.PI/2;
+				} else { // +infinity
+					ratio[i + j] = Math.PI/2;
+				}
+			} else {
+				// ratio is [-Pi/2...Pi/2] initially because of arctan function
+				ratio[i + j] = Math.atan(src.data[i + j] / dst.data[i + j]);
+			}
+			// make 4th band always 0
+			ratio[i + 3] = 0; // kinda hack!
 		}
 		i += len;
 	}
 	return {data: ratio, width: src.width, height: src.height};
+}
+
+/**
+* Clamp all pixels on image to positive numbers
+*/
+function image_abs(image) {
+	var i = 0;
+	var size = image.data.length;
+	// stay at Float32 because we may have [-Pi/2..Pi/2] in case of ratio
+	var output = new Float32Array(size);
+	while (i < size) {
+		output[i] = Math.abs(image.data[i]);
+		i++;
+	}
+	return {data: output, width: image.width, height: image.height};
+}
+
+/**
+* Apply threshold on image
+*/
+function image_thresholding(image, threshold, mode) {
+	var i = 0;
+	var len = 4; // bands num
+	var size = image.data.length;
+	// return to Uint8Clamped [0..255]
+	var output = new Uint8ClampedArray(size);
+	while (i < size) {
+		if (mode) {
+			/**
+			* If vector length is greater than threshold
+			*/
+			var norm = 0; // calculate vector length
+			for (var j = 0; j < len; j++) {
+				norm += Math.pow(image.data[i + j], 2);
+			}
+			norm = Math.sqrt(norm);
+			var pixel = norm > threshold ? change() : empty(); // result
+		} else {
+			/**
+			* If ANY element in vector is greater than threshold
+			*/
+			var pixel = empty(); // no change by default
+			for (var j = 0; j < len; j++) {
+				if (image.data[i + j] > threshold) {
+					pixel = change();
+					break;
+				}
+			}
+		}
+		for (j = 0; j < len; j++) {
+			output[i + j] = pixel[j]; // fill up output
+		}
+		i += len;
+	}
+	return {data: output, width: image.width, height: image.height};
+}
+
+/**
+* Stretch color palette on image
+*/
+function image_stretch(image, palette) {
+	return image;
 }
 
 /**
