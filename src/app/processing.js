@@ -63,7 +63,8 @@ function changeDetection(method) {
 						img = thresholding(img, data.threshold, true);
 					} else { // stretch
 							//console.log("stretch image");
-						img = stretch(img, null);
+						// default palette
+						img = stretch(img, [[0, 0, 255, 255], [0, 255, 0, 255], [255, 0, 0, 255]]);
 					}
 						//log("", img.data, true);
 					return img;
@@ -80,7 +81,8 @@ function changeDetection(method) {
 						img = thresholding(img, data.threshold, true);
 					} else { // stretch
 							//console.log("stretch image");
-						img = stretch(img, null);
+						// default palette
+						img = stretch(img, [[0, 0, 255, 255], [255, 0, 0, 255]]);
 					}
 						//log("", img.data, true);
 					return img;

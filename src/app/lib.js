@@ -287,7 +287,61 @@ function image_thresholding(image, threshold, mode) {
 * Stretch color palette on image
 */
 function image_stretch(image, palette) {
-	return image;
+	//console.log("image_stretch");
+	var i = 0;
+	var len = 4; // bands num
+	var size = image.data.length;
+	// return to Uint8Clamped [0..255]
+	var output = new Uint8ClampedArray(size);
+	var min_bands = min(image.data);
+	//console.log("min_bands: " + min_bands);
+	var max_bands = max(image.data);
+	//console.log("max_bands: " + max_bands);
+	var count = 0;
+	while (i < size) {
+		for (var j = 0; j < len; j++) {
+			// get value from i'th pixel, from j'th band
+			var value = image.data[i + j];
+			if (count >= 0 && count < 15) console.log("image.data[i + " + j + "]: " + value);
+			// calculate its percentage between min and max in the corresponding bands
+			var percent;
+			var temp = max_bands[j] - min_bands[j]; // Math.abs()?
+			if (temp === 0) { // division by zero is forbidden!
+				percent = 0; // undefined
+			} else {
+				// calculate normally
+				percent = ((value - min_bands[j]) / temp) * 100;
+			}
+			if (count >= 0 && count < 15) console.log("     percent: " + percent);
+			// use percentage to calculate value in color palette
+			var color;
+			var segment = 100 / palette.length;
+			if (count >= 0 && count < 15) console.log("     segment: " + segment);
+			for (var k = 0; k < (palette.length - 1); k++) {
+				if (k * segment <= percent && percent <= (k + 1) * segment) break;
+			}
+			if (count >= 0 && count < 15) console.log("     k: " + k);
+			if (count >= 0 && count < 15) console.log("     palette[k]: " + palette[k]);
+			if (count >= 0 && count < 15) console.log("     palette[k + 1]: " + palette[k + 1]);
+			temp = palette[k][j] - palette[k + 1][j]; // Math.abs()?
+			if (temp === 0) {
+				// nothing to stretch, just use any color in palette
+				color = palette[k + 1][j];
+			} else {
+				color = (percent / 100) * (palette[k + 1][j] - palette[k][j]) + palette[k][j];
+			}
+			if (count >= 0 && count < 15) console.log("     color: " + color);
+			output[i + j] = color;
+		}
+		i += len;
+		count++; // number of pixels
+		/*
+		if (count > 270000 && count < 270100) {
+			console.log(output[i] + ", " + output[i + 1] + ", " + output[i + 2] + ", " + output[i + 3]);
+		}
+		*/
+	}
+	return {data: output, width: image.width, height: image.height};
 }
 
 /**
