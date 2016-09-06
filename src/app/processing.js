@@ -26,7 +26,6 @@ function changeDetection(method) {
 		 * @return {Array} The output pixel.
 		 */
 		operation: function(pixels, data) {
-			// if normalization option is enabled
 				/*
 				console.log("initial input data:");
 				console.log("");
@@ -34,6 +33,7 @@ function changeDetection(method) {
 				console.log("");
 				console.log("normalize...");
 				*/
+			// if normalization option is enabled
 			if (data.normalize) {
 				var m1 = mean(pixels[0].data);
 				var m2 = mean(pixels[1].data);
@@ -152,7 +152,10 @@ function expressAnalysis(method) {
 		operation: function(pixels, data) {
 			switch (data.method) {
 				case 'urban':
-					// complex chain of procedures
+					// init median filter
+					var filter = new MedianFilter();
+					filter.maskHeight = 5;
+					filter.maskWidth = 5;
 					// normalize pixels[1]
 					var m1 = mean(pixels[0].data);
 					var m2 = mean(pixels[1].data);
@@ -161,13 +164,15 @@ function expressAnalysis(method) {
 					pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
 					// difference
 					var diff = difference(pixels[0], pixels[1]);
+					diff = abs(diff);
 					diff = thresholding(diff, 90, true);
-					var median1 = new MedianFilter().convertImage(diff, diff.width, diff.height);
+					var median1 = filter.convertImage(diff, diff.width, diff.height);
 					median1 = removePixels(median1, [255, 255, 255, 255]); // remove white
 					// ratio
 					var rat = ratio(pixels[0], pixels[1]);
-					rat = thresholding(rat, 0, true);
-					var median2 = new MedianFilter().convertImage(rat, rat.width, rat.height);
+					rat = abs(rat);
+					rat = thresholding(rat, 1.65, true);
+					var median2 = filter.convertImage(rat, rat.width, rat.height);
 					median2 = removePixels(median2, [255, 255, 255, 255]); // remove white
 					// result
 					return overlapPixels(median1, median2);
@@ -185,6 +190,7 @@ function expressAnalysis(method) {
 			mean: image_mean,
 			standard_deviation: image_standard_deviation,
 			// utils
+			abs: image_abs,
 			normalize: image_normalize,
 			thresholding: image_thresholding,
 			// change detection sub-pixel methods
