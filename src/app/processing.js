@@ -64,7 +64,7 @@ function changeDetection(method) {
 					} else { // stretch
 							//console.log("stretch image");
 						// default palette
-						img = stretch(img, [[0, 0, 255, 255], [0, 255, 0, 255], [255, 0, 0, 255]]);
+						img = stretch(img, getPalette("rgb"));
 					}
 						//log("", img.data, true);
 					return img;
@@ -82,7 +82,7 @@ function changeDetection(method) {
 					} else { // stretch
 							//console.log("stretch image");
 						// default palette
-						img = stretch(img, [[0, 0, 255, 255], [255, 0, 0, 255]]);
+						img = stretch(img, getPalette("rgb"));
 					}
 						//log("", img.data, true);
 					return img;
@@ -110,7 +110,9 @@ function changeDetection(method) {
 			// any change detection functions
 			ratio: image_ratio,
 			difference: image_difference,
-			composite: multitemporal_composite
+			composite: multitemporal_composite,
+			// other
+			getPalette: getPalette
 		}
 	});
 	// set handler on beforeoperations

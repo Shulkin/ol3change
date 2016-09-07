@@ -136,6 +136,20 @@ function change() {
 	return [255, 0, 0, 255];
 }
 
+function getPalette(type) {
+	if (type == "rgb") {
+		// default rgb palette
+		return [
+			{value: 0, color: [0, 0, 255, 255]},
+			{value: 25, color: [0, 255, 0, 255]},
+			{value: 50, color: [255, 255, 0, 255]},
+			{value: 100, color: [255, 0, 0, 255]}
+		];
+	} else {
+		return []; // empty
+	}
+}
+
 function getShortTitle(header, array) {
 	var params = "";
 	for (var i = 0; i < array.length; i++) {
