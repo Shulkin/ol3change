@@ -15,7 +15,8 @@ var messages = {
 				title: "Service",
 				express: "Quick analysis",
 				change: "Change detection",
-				filter: "Filter"
+				filter: "Filter",
+				statistics: "Statistics"
 			},
 			_export: {
 				title: "Export",
@@ -49,6 +50,9 @@ var messages = {
 			filter: {
 				title: "Apply filter",
 				apply: "Apply"
+			},
+			statistics: {
+				title: "Calculate statistics"
 			},
 			msg: {
 				_close: "Close"
@@ -115,6 +119,13 @@ var messages = {
 				median: "Median filter"
 			}
 		},
+		statistics: {
+			_layer: "Select layer",
+			max: "Maximum",
+			min: "Minimum",
+			mean: "Mean",
+			standard_deviation: "Standard deviation"
+		},
 		error: {
 			title: "Error",
 			under_construction: "Under construction...",
@@ -140,7 +151,8 @@ var messages = {
 				title: "Сервисы",
 				express: "Экспресс-анализ",
 				change: "Найти изменения",
-				filter: "Фильтрация"
+				filter: "Фильтрация",
+				statistics: "Статистика"
 			},
 			_export: {
 				title: "Экспорт",
@@ -174,6 +186,9 @@ var messages = {
 			filter: {
 				title: "Применить фильтр",
 				apply: "Применить"
+			},
+			statistics: {
+				title: "Расчет статистических показателей"
 			},
 			msg: {
 				_close: "Закрыть"
@@ -239,6 +254,13 @@ var messages = {
 				edge: "Детектор граней",
 				median: "Медианный фильтр"
 			}
+		},
+		statistics: {
+			_layer: "Выберите слой",
+			max: "Максимум",
+			min: "Минимум",
+			mean: "Среднее",
+			standard_deviation: "Стандартное отклонение"
 		},
 		error: {
 			title: "Ошибка",

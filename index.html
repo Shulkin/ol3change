@@ -95,6 +95,14 @@
 									&nbsp;&nbsp;<span id="m_service_filter">
 								</span>
 							</a></li>
+							<li><a href="#"
+								data-toggle="collapse"
+								data-target=".navbar-collapse.in">
+								<span data-toggle="modal" data-target="#statistics">
+									<i class="fa fa-bar-chart"></i>
+									&nbsp;&nbsp;<span id="m_service_statistics">
+								</span>
+							</a></li>
 						</ul>
 					</li>
 					<li class="dropdown">
@@ -205,7 +213,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- modal dialog 2, define options for change detection -->
+		<!-- modal dialog 2, options for express analysis -->
 		<div id="express" class="modal" role="dialog">
 			<div class="modal-dialog">
 				<!-- content-->
@@ -226,7 +234,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- modal dialog 3, post processing options -->
+		<!-- modal dialog 3, post processing options and filters -->
 		<div id="filter" class="modal" role="dialog">
 			<div class="modal-dialog">
 				<!-- content-->
@@ -247,7 +255,22 @@
 				</div>
 			</div>
 		</div>
-		<!-- modal dialog 4, load layers from services -->
+		<!-- modal dialog 4, statistics -->
+		<div id="statistics" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title"><span id="md_statistics_title"></span></h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- modal dialog 5, load layers from services -->
 		<div id="layers" class="modal" role="dialog">
 			<div class="modal-dialog">
 				<!-- content-->
@@ -275,7 +298,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- modal dialog 5, login window -->
+		<!-- modal dialog 6, login window -->
 		<div id="auth" class="modal" role="dialog">
 			<div class="modal-dialog modal-sm">
 				<!-- content-->
@@ -304,7 +327,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- modal dialog 6, logout popup with confirm button -->
+		<!-- modal dialog 7, logout popup with confirm button -->
 		<div id="logout" class="modal" role="dialog">
 			<div class="modal-dialog modal-sm">
 				<!-- content-->
@@ -326,7 +349,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- modal dialog 7, simple message for error, info ,etc. -->
+		<!-- modal dialog 8, simple message for error, info ,etc. -->
 		<div id="msg" class="modal" role="dialog">
 			<div class="modal-dialog modal-sm">
 				<!-- content-->

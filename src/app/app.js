@@ -176,6 +176,13 @@ function layers_list_div(title, id) {
 	return div;
 }
 
+function span_div(text) {
+	var div = $("<div>");
+	var span = $("<span>" + text + "</span>");
+	div.append(span, "</div>");
+	return div;
+}
+
 function parameters_div(title, type, id, obj) {
 	var div = $("<div>");
 	var p = $("<p></p>").text(title);
@@ -364,6 +371,67 @@ $('#filter').on('shown.bs.modal', function() {
 	});
 });
 
+// handler on show statistics window
+$('#statistics').on('shown.bs.modal', function() {
+	var elem = $("#statistics > div > div.modal-content > div.modal-body");
+	elem.html(""); // clear previous html
+	elem.append(
+		// calculate statistics for this layer
+		layers_list_div(tr('statistics:_layer'), "layer_statistics"),
+		// result of the calculation
+		empty_div("statistics_result")
+	);
+	$('#layer_statistics').on('change', function() {
+		var name = $(this).val(); // layers name
+		if (name === 'null') {
+			error(tr("error:invalid_layer"));
+			return;
+		}
+		var layer = getLayerByName(map, name);
+		if (layer === null) {
+			error(tr("error:layer_not_found"));
+			return;
+		}
+		var raster = new ol.source.Raster({
+			sources: [layer.getSource()],
+			operationType: 'image',
+			operation: function(pixels, data) {
+				var source = pixels[0];
+				data.max = max(source.data);
+				data.min = min(source.data);
+				data.mean = mean(source.data);
+				data.standard_deviation = standard_deviation(source.data);
+				return {data: source.data, width: source.width, height: source.height}; // mandatory!
+			},
+			lib: {
+				max: image_max,
+				min: image_min,
+				mean: image_mean,
+				standard_deviation: image_standard_deviation
+			}
+		});
+		raster.on('afteroperations', function(event) {
+			var div = $("#statistics_result");
+			div.html(""); // clear result
+			div.append(
+				span_div(tr("statistics:max") + ": " + event.data.max),
+				span_div(tr("statistics:min") + ": " + event.data.min),
+				span_div(tr("statistics:mean") + ": " + event.data.mean),
+				span_div(tr("statistics:standard_deviation") + ": " + event.data.standard_deviation)
+			);
+			map.removeLayer(l);
+		});
+		var l = new ol.layer.Image({
+			title: "blank",
+			name: uid(),
+			group: "imagery",
+			deletable: true,
+			source: raster
+		});
+		map.addLayer(l);
+	});
+});
+
 // translate main menu
 function trMenu() {
 	$("span#m_extent").text(tr('menu:extent:title'));
@@ -375,6 +443,7 @@ function trMenu() {
 	$("span#m_service_express").text(tr('menu:service:express'));
 	$("span#m_service_change").text(tr('menu:service:change'));
 	$("span#m_service_filter").text(tr('menu:service:filter'));
+	$("span#m_service_statistics").text(tr('menu:service:statistics'));
 	$("span#m_export").text(tr('menu:_export:title'));
 	$("span#m_export_print").text(tr('menu:_export:print'));
 	$("span#m_info").text(tr('menu:info:title'));
@@ -396,6 +465,7 @@ function trModal() {
 	$("span#md_change_confirm").text(tr('modal:change:_confirm'));
 	$("span#md_filter_title").text(tr('modal:filter:title'));
 	$("span#md_filter_apply").text(tr('modal:filter:apply'));
+	$("span#md_statistics_title").text(tr('modal:statistics:title'));
 	$("span#md_msg_close").text(tr('modal:msg:_close'));
 	$("span#md_layers_title").text(tr('modal:_layers:title'));
 	$("span#md_layers_load").text(tr('modal:_layers:load'));
