@@ -1,24 +1,3 @@
-// array of kernels for filters
-var kernels = {
-	sharpen: [
-		0, -1, 0,
-		-1, 5, -1,
-		0, -1, 0
-	],
-	gaussian: [
-		1, 4, 7, 4, 1,
-		4, 16, 26, 16, 4,
-		7, 26, 41, 26, 7,
-		4, 16, 26, 16, 4,
-		1, 4, 7, 4, 1
-	],
-	edge: [
-		0, 1, 0,
-		1, -4, 1,
-		0, 1, 0
-	]
-};
-
 // for debug
 function log_statistics(title, data, separate) {
 	if (separate) console.log("");
@@ -33,88 +12,7 @@ function log_statistics(title, data, separate) {
 }
 
 /**
-* Calculate mean of the image pixels
-*/
-function image_mean(data) {
-	var i = 0;
-	var len = 4; // bands num
-	var count = 0; // total counter
-	var bands = new Array(len).fill(0); // [r, g, b, a]
-	while (i < data.length) {
-		for (var j = 0; j < len; j++) {
-			bands[j] += data[i + j];
-		}
-		i += len;
-		count++;
-	}
-	for (j = 0; j < len; j++) {
-		bands[j] /= count;
-	}
-	return bands;
-}
-
-/**
-* Calculate maximum of the image pixels
-*/
-function image_max(data) {
-	var i = 0;
-	var len = 4; // bands num
-	var count = 0; // total counter
-	var result = new Array(len).fill(Number.NEGATIVE_INFINITY);
-	while (i < data.length) {
-		for (var j = 0; j < len; j++) {
-			if (result[j] < data[i + j]) result[j] = data[i + j];
-		}
-		i += len;
-		count++;
-	}
-	return result;
-}
-
-/**
-* Calculate minimum of the image pixels
-*/
-function image_min(data) {
-	var i = 0;
-	var len = 4; // bands num
-	var count = 0; // total counter
-	var result = new Array(len).fill(Number.POSITIVE_INFINITY);
-	while (i < data.length) {
-		for (var j = 0; j < len; j++) {
-			if (result[j] > data[i + j]) result[j] = data[i + j];
-		}
-		i += len;
-		count++;
-	}
-	return result;
-}
-
-/**
-* Calculate standard deviation of the image pixels
-*/
-function image_standard_deviation(data) {
-	var i = 0;
-	var len = 4; // bands num
-	var count = 0; // total counter
-	var m = mean(data); // calculate mean
-	var dispersion = new Array(len).fill(0);
-	// calculate dispersion
-	while (i < data.length) {
-		for (var j = 0; j < len; j++) {
-			dispersion[j] += Math.pow(data[i + j] - m[j], 2);
-		}
-		i += len;
-		count++;
-	}
-	var bands = new Array(len).fill(0);
-	for (j = 0; j < len; j++) {
-		bands[j] = Math.sqrt((1 / (count)) * dispersion[j]);
-	}
-	return bands;
-}
-
-/**
-* Normalize image pixels on all bands
+* Normalize image pixels on all bands.
 */
 function image_normalize(image, m1, m2, s1, s2) {
 	var i = 0;
@@ -229,7 +127,7 @@ function image_ratio(src, dst) {
 }
 
 /**
-* Clamp all pixels on image to positive numbers
+* Clamp all pixels on image to positive numbers.
 */
 function image_abs(image) {
 	var i = 0;
@@ -244,13 +142,55 @@ function image_abs(image) {
 }
 
 /**
-* Apply threshold on image
+* Linear stretch all pixels in all bands to grayscale [0..255]
+*/
+function image_grayscale(image) {
+	var i = 0;
+	var len = 4; // bands num
+	var size = image.data.length;
+	// initially stay at Float32 to calculate norms
+	var normalized = new Float32Array(size);
+	while (i < size) {
+		var norm = 0; // calculate vector length
+		for (var j = 0; j < len; j++) {
+			norm += Math.pow(image.data[i + j], 2);
+		}
+		norm = Math.sqrt(norm);
+		for (j = 0; j < len; j++) {
+			normalized[i + j] = norm;
+		}
+		i += len;
+	}
+	// return to Uint8Clamped [0..255]
+	var output = new Uint8ClampedArray(size);
+	var min_old = min(normalized);
+	var max_old = max(normalized);
+	var min_new = new Array(len).fill(0);
+	var max_new = new Array(len).fill(255);
+	i = 0;
+	while (i < size) {
+		for (var j = 0; j < len; j++) {
+			var temp = max_old[j] - min_old[j];
+			if (temp === 0) temp = 1; // division by zero is forbidden!
+			output[i + j] = (normalized[i + j] - min_old[j]) * ((max_new[j] - min_new[j]) / temp) + min_new[j];
+		}
+		output[i + 3] = 255; // alpha should always be 255!
+		i += len;
+	}
+	return {data: output, width: image.width, height: image.height};
+}
+
+/**
+* Apply threshold on image.
 */
 function image_thresholding(image, threshold, mode) {
 	var i = 0;
 	var len = 4; // bands num
 	var size = image.data.length;
-	// return to Uint8Clamped [0..255]
+	/**
+	 * Force to Uint8Clamped [0..255].
+	 * We should be in grayscale by now!
+	 */
 	var output = new Uint8ClampedArray(size);
 	while (i < size) {
 		if (mode) {
@@ -284,13 +224,16 @@ function image_thresholding(image, threshold, mode) {
 }
 
 /**
-* Stretch color palette on image
+* Stretch color palette on image.
 */
 function image_stretch(image, palette) {
 	var i = 0;
 	var len = 4; // bands num
 	var size = image.data.length;
-	// return to Uint8Clamped [0..255]
+	/**
+	 * Force to Uint8Clamped [0..255].
+	 * We should be in grayscale by now!
+	 */
 	var output = new Uint8ClampedArray(size);
 	var min_bands = min(image.data);
 	var max_bands = max(image.data);
@@ -328,112 +271,17 @@ function image_stretch(image, palette) {
 	return {data: output, width: image.width, height: image.height};
 }
 
-/**
-* Normalize a kernel N x N.
-* @param {Array.<number>} kernel Kernel.
-*/
-function kernel_normalize(kernel) {
-	var len = kernel.length;
-	var normal = new Array(len);
-	var i, sum = 0;
-	for (i = 0; i < len; ++i) {
-		sum += kernel[i];
-	}
-	if (sum <= 0) {
-		normal.normalized = false;
-		sum = 1;
-	} else {
-		normal.normalized = true;
-	}
-	for (i = 0; i < len; ++i) {
-		normal[i] = kernel[i] / sum;
-	}
-	return normal;
+function threshold_otsu() {
+	console.log("determine threshold value with Otsu's method");
+	return 100; // dummy
 }
 
-/**
-* Apply a convolution kernel to image. This works for any size kernel, but
-* performance starts degrading above 3 x 3.
-* @param {Image} image Input data.
-* @param {Array.<number>} kernel Kernel.
-*/
-function convolve(image, kernel) {
-	var width = image.width;
-	var height = image.height;
-	var size = Math.sqrt(kernel.length);
-	var half = Math.floor(size / 2);
-	var inputData = image.data;
-	var outputData = new Uint8ClampedArray(inputData);
-	for (var pixelY = 0; pixelY < height; ++pixelY) {
-		var pixelsAbove = pixelY * width;
-		for (var pixelX = 0; pixelX < width; ++pixelX) {
-			var r = 0, g = 0, b = 0, a = 0;
-			for (var kernelY = 0; kernelY < size; ++kernelY) {
-				for (var kernelX = 0; kernelX < size; ++kernelX) {
-					var weight = kernel[kernelY * size + kernelX];
-					var neighborY = Math.min(height - 1, Math.max(0, pixelY + kernelY - half));
-					var neighborX = Math.min(width - 1, Math.max(0, pixelX + kernelX - half));
-					var inputIndex = (neighborY * width + neighborX) * 4;
-					r += inputData[inputIndex] * weight;
-					g += inputData[inputIndex + 1] * weight;
-					b += inputData[inputIndex + 2] * weight;
-					a += inputData[inputIndex + 3] * weight;
-				}
-			}
-			var outputIndex = (pixelsAbove + pixelX) * 4;
-			outputData[outputIndex] = r;
-			outputData[outputIndex + 1] = g;
-			outputData[outputIndex + 2] = b;
-			outputData[outputIndex + 3] = kernel.normalized ? a : 255;
-		}
-	}
-	return {data: outputData, width: width, height: height};
+function threshold_kapur() {
+	console.log("determine threshold value by Kapurs algorithm");
+	return 100; // dummy
 }
 
-/**
-* Remove any chosen color from image.
-* @param {Image} image Input data.
-*/
-function remove(image, color) {
-	var width = image.width;
-	var height = image.height;
-	var inputData = image.data;
-	var outputData = new Uint8ClampedArray(inputData.length);
-	var i = 0;
-	while (i < inputData.length) {
-		var match = true;
-		for (var j = 0; j < 3; j++) { // compare first 3 colors [R, G, B]
-			if (inputData[i + j] != color[j]) {
-				match = false;
-				break;
-			}
-		}
-		// copy first 3 color components
-		for (j = 0; j < 3; j++) outputData[i + j] = inputData[i + j];
-		outputData[i + 3] = match ? 0 : 255; // decide alpha
-		i += 4;
-	}
-	return {data: outputData, width: width, height: height};
-}
-
-/**
-* Join 2 images together.
-* @param {Image} image Input data.
-*/
-function overlap(src ,dst) {
-	var width = src.width;
-	var height = src.height;
-	var srcData = src.data;
-	var dstData = dst.data;
-	var outputData = new Uint8ClampedArray(srcData.length);
-	var i = 0;
-	while (i < srcData.length) {
-		for (var j = 0; j < 4; j++) outputData[i + j] = srcData[i + j]; // init as srsData
-		// overlap from dstData if corresponding alpha is not transparent
-		if (dstData[i + 3] != 0) {
-			for (j = 0; j < 4; j++) outputData[i + j] = dstData[i + j];
-		}
-		i += 4;
-	}
-	return {data: outputData, width: width, height: height};
+function threshold_percentile() {
+	console.log("determine threshold value by percentile");
+	return 100; // dummy
 }

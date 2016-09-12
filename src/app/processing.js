@@ -26,14 +26,17 @@ function changeDetection(method) {
 		 * @return {Array} The output pixel.
 		 */
 		operation: function(pixels, data) {
-				/*
-				console.log("initial input data:");
-				console.log("");
-				for (var i = 0; i < 2; i++) log("pixels[" + i + "]:", pixels[i].data, false);
-				console.log("");
-				console.log("normalize...");
-				*/
-			// if normalization option is enabled
+			/*
+			console.log("initial input data:");
+			console.log("");
+			for (var i = 0; i < 2; i++) log("pixels[" + i + "]:", pixels[i].data, false);
+			console.log("");
+			console.log("normalize...");
+			*/
+			/**
+			 * First of all, equalize means and deviations of input images.
+			 * If normalization option is enabled.
+			 */
 			if (data.normalize) {
 				var m1 = mean(pixels[0].data);
 				var m2 = mean(pixels[1].data);
@@ -41,56 +44,63 @@ function changeDetection(method) {
 				var s2 = standard_deviation(pixels[1].data);
 				pixels[1] = normalize(pixels[1], m1, m2, s1, s2);
 			}
-				/*
-				console.log("");
-				for (var i = 0; i < 2; i++) log("pixels[" + i + "]:", pixels[i].data, false);
-				console.log("");
-				*/
-			switch (data.method) {
-				case 'composite':
-					// don't need threshold in composite
-					return composite(pixels[0], pixels[1]);
-					break;
-				case 'difference':
-						//console.log("calculate difference...");
-					var img = difference(pixels[0], pixels[1]);
-						//log("", img.data, true);
-						//console.log("abs image");
-					img = abs(img);
-						//log("", img.data, true);
-					if (data.outputType === "threshold") { // threshold
-							//console.log("threshold image");
-						img = thresholding(img, data.threshold, true);
-					} else { // stretch
-							//console.log("stretch image");
-						// default palette
-						img = stretch(img, getPalette("rgb"));
-					}
-						//log("", img.data, true);
-					return img;
-					break;
-				case 'ratio':
-						//console.log("calculate ratio...");
-					var img = ratio(pixels[0], pixels[1]);
-						//log("", img.data, true);
-						//console.log("abs image");
-					img = abs(img);
-						//log("", img.data, true);
-					if (data.outputType === "threshold") { // threshold
-							//console.log("threshold image");
-						img = thresholding(img, data.threshold, true);
-					} else { // stretch
-							//console.log("stretch image");
-						// default palette
-						img = stretch(img, getPalette("rgb"));
-					}
-						//log("", img.data, true);
-					return img;
-					break;
-				default:
-					return pixels[0]; // unnecessary
-					break;
+			/*
+			console.log("");
+			for (var i = 0; i < 2; i++) log("pixels[" + i + "]:", pixels[i].data, false);
+			console.log("");
+			*/
+			/**
+			 * The most simple method is multitemporal composite.
+			 * We don't need any additional parameters.
+			 */
+			if (data.method === "composite") {
+				return composite(pixels[0], pixels[1]);
 			}
+			/**
+			 * Next set of pixel-based methods include image difference and ratio.
+			 * We need to know threshold values and such.
+			 */
+			if (data.method === "difference" || data.method === "ratio") {
+				var img, threshold, palette;
+				if (data.method === "difference") {
+					//console.log("calculate difference...");
+					img = difference(pixels[0], pixels[1]);
+				} else { // ratio
+					//console.log("calculate ratio...");
+					img = ratio(pixels[0], pixels[1]);
+				}
+				//log("", img.data, true);
+				//console.log("abs image");
+				img = abs(img); // get absolute values
+				return grayscale(img);
+				//log("", img.data, true);
+				if (data.outputType === "threshold") { // threshold
+					//console.log("threshold image...");
+					switch (data.thresholdMethod) { // determine threshold value
+						// by user
+						case "manual": threshold = data.thresholdValue; break;
+						// with different statistics methods
+						case "percentile": threshold = percentile(); break;
+						case "otsu": threshold = otsu(); break;
+						case "kapur": threshold = kapur(); break;
+						default:
+							// unknown method
+							threshold = 0; // dummy default value
+							break;
+					}
+					img = thresholding(img, threshold, true);
+				} else { // stretch
+					//console.log("stretch image...");
+					palette = getPalette("rgb"); // get color palette
+					img = stretch(img, palette);
+				}
+				//log("", img.data, true);
+				return img;
+			}
+			/**
+			 * If method is unknown then return first input image
+			 */
+			return pixels[0];
 		},
 		lib: {
 			// colors
@@ -101,11 +111,17 @@ function changeDetection(method) {
 			min: image_min,
 			mean: image_mean,
 			standard_deviation: image_standard_deviation,
+			// threshold methods
+			otsu: threshold_otsu,
+			kapur: threshold_kapur,
+			percentile: threshold_percentile,
 			// utils
 			abs: image_abs,
 			stretch: image_stretch,
 			normalize: image_normalize,
+			grayscale: image_grayscale,
 			thresholding: image_thresholding,
+			// for debug
 			log: log_statistics,
 			// any change detection functions
 			ratio: image_ratio,
@@ -123,8 +139,9 @@ function changeDetection(method) {
 		// set any parameters in data, like threshold for image difference
 		if (method != "composite") {
 			data.normalize = true; // always normalize by default
-			data.threshold = val("change_threshold");
-			data.outputType = get('change_outputType');
+			data.thresholdMethod = val("change_thresholdMethod");
+			data.thresholdValue = val("change_thresholdValue"); // manual
+			data.outputType = get('change_outputType'); // threshold or stretch?
 		}
 	});
 	var title = getShortTitle("Изменения", [layer_1.get('title'), layer_2.get('title')]);

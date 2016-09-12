@@ -9,6 +9,8 @@
  * @require modal.js
  * @require median.js
  * @require utils.js
+ * @require kernel.js
+ * @require statistics.js
  * @require lib.js
  * @require processing.js
  */
@@ -275,19 +277,34 @@ $('#confirm').on('shown.bs.modal', function() {
 		var value = $(this).val(); // selected method
 		var div = $("#change_params");
 		div.html(""); // clear params
-		switch (value) {
-			case "difference":
-				// threshold or stretch?
-				div.append(parameters_div(
-					tr("change:params:output:type"),
-					"select", "change_outputType",
-					[{value: "threshold", title: tr("change:params:output:threshold")},
-					{value: "stretch", title: tr("change:params:output:stretch")}]
-				));
-				// threshold value
+		if (value === "difference" || value === "ratio") {
+			// threshold or stretch?
+			div.append(parameters_div(
+				tr("change:params:output:type"),
+				"select", "change_outputType",
+				[{value: "threshold", title: tr("change:params:output:threshold")},
+				{value: "stretch", title: tr("change:params:output:stretch")}]
+			));
+			// threshold method
+			div.append(parameters_div(
+				"Метод определения порогового значения",
+				"select", "change_thresholdMethod",
+				[{value: "manual", title: "Вручную"},
+				{value: "percentile", title: "Метод перцентилей"},
+				{value: "otsu", title: "Метод Отсу"},
+				{value: "kapur", title: "Алгоритм Капура"}]
+			));
+			// threshold value with empirical default values
+			/**
+			* Important!
+			* Empirical values for threshold are:
+			* Difference = 90
+			* Ratio = 1.65
+			*/
+			if (value === "difference") {
 				div.append(parameters_div(
 					tr("change:params:threshold"),
-					"number", "change_threshold",
+					"number", "change_thresholdValue",
 					/**
 					* Important!
 					* Set threshold value for image pixels difference
@@ -297,19 +314,10 @@ $('#confirm').on('shown.bs.modal', function() {
 					*/
 					{min: 0, max: 900, step: 1, value: 90}
 				));
-				break;
-			case "ratio":
-				// threshold or stretch?
-				div.append(parameters_div(
-					tr("change:params:output:type"),
-					"select", "change_outputType",
-					[{value: "threshold", title: tr("change:params:output:threshold")},
-					{value: "stretch", title: tr("change:params:output:stretch")}]
-				));
-				// threshold value
+			} else { // ratio
 				div.append(parameters_div(
 					tr("change:params:threshold"),
-					"number", "change_threshold",
+					"number", "change_thresholdValue",
 					/**
 					* Important!
 					* Set threshold value for image pixels ratio
@@ -320,14 +328,8 @@ $('#confirm').on('shown.bs.modal', function() {
 					*/
 					{min: 0, max: 2.5, step: 0.01, value: 1.65}
 				));
-				break;
+			}
 		}
-		/**
-		* Important!
-		* Empirical values for threshold are:
-		* Difference = 90
-		* Ratio = 1.65
-		*/
 	});
 });
 
