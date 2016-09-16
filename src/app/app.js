@@ -298,8 +298,8 @@ $('#confirm').on('shown.bs.modal', function() {
 			/**
 			* Important!
 			* Empirical values for threshold are:
-			* Difference = 90
-			* Ratio = 1.65
+			* Difference = 65
+			* Ratio = 160
 			*/
 			if (value === "difference") {
 				div.append(parameters_div(
@@ -310,9 +310,10 @@ $('#confirm').on('shown.bs.modal', function() {
 					* Set threshold value for image pixels difference
 					* 1-3 bands are [0..500] max after Abs, 4 band always 0
 					* Vector length [0..866] => max is 900
-					* Default threshold = 90
+					* Stretch to grayscale [0..255]
+					* Default threshold = 65
 					*/
-					{min: 0, max: 900, step: 1, value: 90}
+					{min: 0, max: 255, step: 1, value: 65}
 				));
 			} else { // ratio
 				div.append(parameters_div(
@@ -323,10 +324,10 @@ $('#confirm').on('shown.bs.modal', function() {
 					* Set threshold value for image pixels ratio
 					* 1-3 bands are [-Pi/2..Pi/2] initially, [0..Pi/2 = 1,57] after Abs, 4 band always 0 (by force!)
 					* Vector length [0..2,17] => max is 2.5
-					* Default threshold = 1.65
-					* Values are rounded up to 2 digits
+					* Stretch to grayscale [0..255]
+					* Default threshold = 160
 					*/
-					{min: 0, max: 2.5, step: 0.01, value: 1.65}
+					{min: 0, max: 255, step: 1, value: 160}
 				));
 			}
 		}

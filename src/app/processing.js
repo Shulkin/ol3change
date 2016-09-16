@@ -63,19 +63,21 @@ function changeDetection(method) {
 			if (data.method === "difference" || data.method === "ratio") {
 				var img, threshold, palette;
 				if (data.method === "difference") {
-					//console.log("calculate difference...");
+					console.log("calculate difference...");
 					img = difference(pixels[0], pixels[1]);
 				} else { // ratio
-					//console.log("calculate ratio...");
+					console.log("calculate ratio...");
 					img = ratio(pixels[0], pixels[1]);
 				}
 				//log("", img.data, true);
 				//console.log("abs image");
 				img = abs(img); // get absolute values
-				return grayscale(img);
+				//log("", img.data, true);
+				//console.log("grayscale image");
+				img = grayscale(img); // convert values to grayscale
 				//log("", img.data, true);
 				if (data.outputType === "threshold") { // threshold
-					//console.log("threshold image...");
+					console.log("threshold image...");
 					switch (data.thresholdMethod) { // determine threshold value
 						// by user
 						case "manual": threshold = data.thresholdValue; break;
@@ -88,7 +90,8 @@ function changeDetection(method) {
 							threshold = 0; // dummy default value
 							break;
 					}
-					img = thresholding(img, threshold, true);
+					console.log("threshold value: " + threshold);
+					img = thresholding(img, threshold, false);
 				} else { // stretch
 					//console.log("stretch image...");
 					palette = getPalette("rgb"); // get color palette
@@ -186,13 +189,15 @@ function expressAnalysis(method) {
 					// difference
 					var diff = difference(pixels[0], pixels[1]);
 					diff = abs(diff);
-					diff = thresholding(diff, 90, true);
+					diff = grayscale(diff);
+					diff = thresholding(diff, 60, false); // 60 is empirical value!
 					var median1 = filter.convertImage(diff, diff.width, diff.height);
 					median1 = removePixels(median1, [255, 255, 255, 255]); // remove white
 					// ratio
 					var rat = ratio(pixels[0], pixels[1]);
 					rat = abs(rat);
-					rat = thresholding(rat, 1.65, true);
+					rat = grayscale(rat);
+					rat = thresholding(rat, 160, false); // 160 is empirical value!
 					var median2 = filter.convertImage(rat, rat.width, rat.height);
 					median2 = removePixels(median2, [255, 255, 255, 255]); // remove white
 					// result
@@ -208,11 +213,14 @@ function expressAnalysis(method) {
 			empty: empty,
 			change: change,
 			// statistic functions
+			max: image_max,
+			min: image_min,
 			mean: image_mean,
 			standard_deviation: image_standard_deviation,
 			// utils
 			abs: image_abs,
 			normalize: image_normalize,
+			grayscale: image_grayscale,
 			thresholding: image_thresholding,
 			// change detection sub-pixel methods
 			ratio: image_ratio,
@@ -269,7 +277,7 @@ function kernelFilter(type) {
 					filter.maskHeight = data.size;
 					filter.maskWidth = data.size;
 					var median = filter.convertImage(source, source.width, source.height);
-					output = removePixels(median, [0, 0, 0, 255]);
+					output = removePixels(median, [0, 0, 0, 255]); // remove black
 					break;
 				default:
 					// just apply kernel

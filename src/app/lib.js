@@ -208,7 +208,7 @@ function image_thresholding(image, threshold, mode) {
 			* If ANY element in vector is greater than threshold
 			*/
 			var pixel = empty(); // no change by default
-			for (var j = 0; j < len; j++) {
+			for (var j = 0; j < (len - 1); j++) { // exclude 255 alpha!
 				if (image.data[i + j] > threshold) {
 					pixel = change();
 					break;
