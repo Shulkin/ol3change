@@ -5,7 +5,13 @@ var messages = {
 			extent: {
 				title: "Extent",
 				max: "Full extent",
-				vl: "Vladivostok"
+				vl: "Vladivostok",
+				heritage: {
+					pospelov: "Fort Pospelova",
+					fort_6: "Fort №6",
+					voroshilov: "Artillery battery Voroshilov",
+					nameless: "Artillery battery Nameless"
+				}
 			},
 			_layers: {
 				title: "Layers",
@@ -141,7 +147,13 @@ var messages = {
 			extent: {
 				title: "Масштаб",
 				max: "Максимальный",
-				vl: "Владивосток"
+				vl: "Владивосток",
+				heritage: {
+					pospelov: "Форт Поспелова",
+					fort_6: "Форт №6",
+					voroshilov: "Батарея им. Ворошилова",
+					nameless: "Батарея Безымянная"
+				}
 			},
 			_layers: {
 				title: "Слои",

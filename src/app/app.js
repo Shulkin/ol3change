@@ -24,6 +24,14 @@ var zoom_max = 3;
 // vladivostok
 var center_vl = [14682657.95, 5329191.66]; // Zolotoy Bridge
 var zoom_vl = 14;
+// heritage sites, vladivostok fortress
+var center_heritages = {
+	"pospelov": [43.0498312, 131.8814921], // lat, lon
+	"fort_6": [43.1927774, 131.9558805],
+	"voroshilov": [42.9817365, 131.890617],
+	"nameless": [43.1226548, 131.8766883]
+};
+var zoom_heritage = 18; // same for all heritage sites
 // ================
 
 // create a new popup with a close box
@@ -440,6 +448,10 @@ function trMenu() {
 	$("span#m_extent").text(tr('menu:extent:title'));
 	$("span#m_extent_max").text(tr('menu:extent:max'));
 	$("span#m_extent_vl").text(tr('menu:extent:vl'));
+	$("span#m_extent_pospelov").text(tr('menu:extent:heritage:pospelov'));
+	$("span#m_extent_fort_6").text(tr('menu:extent:heritage:fort_6'));
+	$("span#m_extent_voroshilov").text(tr('menu:extent:heritage:voroshilov'));
+	$("span#m_extent_nameless").text(tr('menu:extent:heritage:nameless'));
 	$("span#m_layers").text(tr('menu:_layers:title'));
 	$("span#m_layers_add").text(tr('menu:_layers:add'));
 	$("span#m_service").text(tr('menu:service:title'));

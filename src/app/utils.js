@@ -37,6 +37,13 @@ function zoomToVladivostok() {
 	map.getView().setZoom(zoom_vl);
 }
 
+function zoomToHeritage(site) {
+	map.getView().setCenter(ol.proj.transform(
+		[center_heritages[site][1], center_sites[site][0]], // lon, lat (!)
+		'EPSG:4326', 'EPSG:3857'));
+	map.getView().setZoom(zoom_heritage);
+}
+
 function get(id) { // get selected value from list by id
 	var elem = document.getElementById(id);
 	return elem.options[elem.selectedIndex].value;
